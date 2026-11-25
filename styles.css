@@ -11,13 +11,13 @@
 
 html {
   margin: 0;
-  overflow-y: scroll;
   scroll-behavior: smooth;
   background-color: var(--bg-color);
   color: var(--color-10);
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-22-5);
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -29,13 +29,12 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-22-5);
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Aesthetic Neon-Dark Scrollbars */
 html,
-.sidebar,
 .spoc-staff-list,
 .table-wrap,
 .roster-modal-panel {
@@ -353,11 +352,6 @@ html,
 
 /* Left Sidebar */
 .sidebar {
-  position: sticky;
-  top: 0;
-  max-height: 100vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   padding: var(--space-7);
   background-color: var(--bg-color);
   border-right: 1px solid var(--border-subtle);
