@@ -9,7 +9,18 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  margin: 0;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  background-color: var(--bg-color);
+  color: var(--color-10);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-22-5);
+  -webkit-font-smoothing: antialiased;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -18,12 +29,16 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-22-5);
-  scroll-behavior: smooth;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
 /* Aesthetic Neon-Dark Scrollbars */
-* {
+html,
+.sidebar,
+.spoc-staff-list,
+.table-wrap,
+.roster-modal-panel {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) var(--bg-color);
 }
@@ -340,7 +355,7 @@ body {
 .sidebar {
   position: sticky;
   top: 0;
-  height: 100vh;
+  max-height: 100vh;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--space-7);
