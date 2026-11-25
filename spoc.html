@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVENTRA | IVC PULSE — SPOC Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="./tokens.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-page="spoc">
+  <a class="skip-link" href="#main-content">Skip to SPOC workspace</a>
+
+  <div class="app-shell" id="app-shell">
+    <!-- Left Fixed SPOC Sidebar -->
+    <aside class="sidebar" aria-label="SPOC Portal Sidebar">
+      <div class="sidebar-top">
+        <div class="brand-card">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <path d="M18 5L29 27H23.5L18 15.5L12.5 27H7L18 5Z" fill="#FFFFFF" />
+              <path d="M14.5 22H21.5L18 16.5L14.5 22Z" fill="#00F0FF" />
+            </svg>
+            <span class="brand-logo-text">EVENTRA</span>
+          </div>
+        </div>
+
+        <div class="portal-identity">
+          <div class="portal-title-row">
+            <span class="portal-title">SPOC PORTAL</span>
+          </div>
+          <div class="portal-subtitle">STUDENT POINT OF CONTACT</div>
+        </div>
+
+        <div class="event-status-pill" role="status" aria-live="polite">
+          <span class="event-status-left">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span>IDEATHON — LIVE</span>
+          </span>
+          <span class="event-year">2026</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="SPOC navigation">
+        <div class="nav-section-label">SPOC WORKSPACE</div>
+        <a href="#spoc-teams" class="nav-item is-active" data-view="spoc-teams" aria-current="page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span>My Assigned Teams</span>
+        </a>
+        <a href="#spoc-readiness" class="nav-item" data-view="spoc-readiness">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          <span>Check-In &amp; Readiness</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="jury-auth-card">
+          <div class="jury-auth-kicker">SPOC PORTAL</div>
+          <div class="jury-auth-title" id="sidebar-user-label">Student Coordinator</div>
+          <div class="jury-auth-row">
+            <span>Coordinator Auth</span>
+            <span class="auth-verified">VERIFIED</span>
+          </div>
+        </div>
+
+        <button type="button" class="signout-link" id="btn-sign-out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>SIGN OUT (SPOC)</span>
+        </button>
+
+        <div class="sidebar-build-meta">
+          <span>BUILD: ViceVerse v2.0</span>
+          <span>IVC 2026</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main SPOC Workspace -->
+    <main id="main-content" class="main-workspace">
+      <section class="broadcast-bar" aria-label="SPOC portal broadcasts">
+        <div class="broadcast-left">
+          <span class="broadcast-icon-box" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+          </span>
+          <span class="broadcast-badge">SPOC PORTAL BROADCASTS</span>
+          <span class="broadcast-msg">Verify team check-ins and presentation decks before round start.</span>
+        </div>
+        <div class="live-sync-pill" id="sync-status-pill" role="status" aria-live="polite">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="sync-status-text">Syncing...</span>
+        </div>
+      </section>
+
+      <!-- View: My Assigned Teams -->
+      <div id="view-spoc-teams" class="view-panel">
+        <section class="admin-panel" aria-labelledby="spoc-teams-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">SPOC // TEAM COORDINATION</div>
+            <h1 id="spoc-teams-title" class="rubrics-title">MY ASSIGNED TEAMS</h1>
+            <p class="rubrics-sub">Update check-in status, verify presentation decks, and mark teams ready to pitch.</p>
+          </div>
+
+          <section class="kpi-strip" aria-label="SPOC progress metrics">
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading">ASSIGNED TEAMS</span></div>
+              <div class="kpi-number kpi-num-white" id="spoc-kpi-total">0</div>
+              <div class="kpi-caption">Under Your Coordination</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">CHECKED IN</span></div>
+              <div class="kpi-number kpi-num-green" id="spoc-kpi-checked">0</div>
+              <div class="kpi-caption">Arrived at Venue</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">DECK VERIFIED</span></div>
+              <div class="kpi-number kpi-num-cyan" id="spoc-kpi-deck">0</div>
+              <div class="kpi-caption">Slides Tested</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">PITCH READY</span></div>
+              <div class="kpi-number kpi-num-pink" id="spoc-kpi-ready">0</div>
+              <div class="kpi-caption">Cleared for Stage</div>
+            </article>
+          </section>
+
+          <section class="teams-grid" id="spoc-teams-grid" aria-label="SPOC assigned teams"></section>
+        </section>
+      </div>
+
+      <!-- View: Check-In & Readiness Matrix -->
+      <div id="view-spoc-readiness" class="view-panel" hidden>
+        <section class="admin-panel" aria-labelledby="spoc-readiness-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">SPOC // READINESS TABLE</div>
+            <h1 id="spoc-readiness-title" class="rubrics-title">CHECK-IN &amp; READINESS</h1>
+            <p class="rubrics-sub">Quick overview of check-in, deck verification, assigned judge, and coordinator notes.</p>
+          </div>
+
+          <div class="admin-table-card">
+            <div class="table-wrap" id="spoc-readiness-table-wrap"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js?v=15" defer></script>
+</body>
+</html>

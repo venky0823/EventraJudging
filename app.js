@@ -29,6 +29,7 @@ const state = {
   allEvaluations: [],
   allAccounts: [],
   spocs: [],
+  spocUpdates: [],
   auditLogs: [],
   resultsEngine: 'Draft / Unreleased',
   inspectRole: null,
@@ -94,11 +95,19 @@ function showView(viewId) {
     'view-admin-matrix',
     'view-admin-rounds',
     'view-admin-spocs',
-    'view-admin-audit'
+    'view-admin-audit',
+    'view-spoc-teams',
+    'view-spoc-readiness'
   ].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.hidden = id !== targetId;
   });
+}
+
+function roleHomePage(role) {
+  if (role === 'admin') return './admin.html';
+  if (role === 'spoc') return './spoc.html';
+  return './judge.html';
 }
 
 function applyAuthUI() {
@@ -107,7 +116,7 @@ function applyAuthUI() {
 
   if (page === 'login') {
     if (user) {
-      window.location.replace(user.role === 'admin' ? './admin.html' : './judge.html');
+      window.location.replace(roleHomePage(user.role));
     }
     return;
   }
@@ -118,12 +127,17 @@ function applyAuthUI() {
   }
 
   if (page === 'admin' && user.role !== 'admin') {
-    window.location.replace('./judge.html');
+    window.location.replace(roleHomePage(user.role));
     return;
   }
 
-  if (page === 'judge' && user.role === 'admin') {
-    window.location.replace('./admin.html');
+  if (page === 'judge' && user.role !== 'judge') {
+    window.location.replace(roleHomePage(user.role));
+    return;
+  }
+
+  if (page === 'spoc' && user.role !== 'spoc') {
+    window.location.replace(roleHomePage(user.role));
     return;
   }
 
@@ -133,7 +147,8 @@ function applyAuthUI() {
     authLabel.textContent = `${user.display_name} (${user.role.toUpperCase()})`;
   }
 
-  const defaultView = page === 'admin' ? 'admin-overview' : 'teams';
+  const defaultView =
+    page === 'admin' ? 'admin-overview' : page === 'spoc' ? 'spoc-teams' : 'teams';
   setActiveNav(defaultView);
   showView(defaultView);
 
@@ -155,6 +170,7 @@ function setupRealtimeSync() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'evaluation_rounds' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'rubric_criteria' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'spocs' }, () => syncFromSupabase())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'spoc_updates' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_logs' }, () => {
       if (isAdmin()) syncFromSupabase();
@@ -238,16 +254,20 @@ async function syncFromSupabase() {
       state.supabase.from('rubric_criteria').select('*').order('sort_order', { ascending: true })
     ];
 
+    if (isAdmin() || state.user?.role === 'spoc') {
+      queries.push(state.supabase.from('spocs').select('*').order('created_at', { ascending: false }));
+      queries.push(state.supabase.from('spoc_updates').select('*'));
+    }
+
     if (isAdmin()) {
       queries.push(state.supabase.rpc('list_judges'));
-      queries.push(state.supabase.from('spocs').select('*').order('created_at', { ascending: false }));
       queries.push(state.supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50));
       queries.push(state.supabase.rpc('list_all_accounts'));
       queries.push(state.supabase.from('event_settings').select('*').eq('key', 'results_engine').maybeSingle());
     }
 
     const results = await Promise.all(queries);
-    const [teamsRes, assignRes, evalsRes, roundsRes, critRes, judgesRes, spocsRes, auditRes, accountsRes, settingsRes] = results;
+    const [teamsRes, assignRes, evalsRes, roundsRes, critRes, spocsRes, spocUpdatesRes, judgesRes, auditRes, accountsRes, settingsRes] = results;
 
     if (teamsRes.error) throw teamsRes.error;
     if (assignRes.error) throw assignRes.error;
@@ -269,8 +289,9 @@ async function syncFromSupabase() {
         max: Number(c.max_score)
       }));
     }
-    if (judgesRes && !judgesRes.error) state.judges = judgesRes.data || [];
     if (spocsRes && !spocsRes.error) state.spocs = spocsRes.data || [];
+    if (spocUpdatesRes && !spocUpdatesRes.error) state.spocUpdates = spocUpdatesRes.data || [];
+    if (judgesRes && !judgesRes.error) state.judges = judgesRes.data || [];
     if (auditRes && !auditRes.error) state.auditLogs = auditRes.data || [];
     if (accountsRes && !accountsRes.error) state.allAccounts = accountsRes.data || [];
     if (settingsRes && !settingsRes.error && settingsRes.data) {
@@ -890,6 +911,7 @@ function renderRosterModalTable() {
                 <option value="participant" ${acc.role === 'participant' ? 'selected' : ''}>Participant</option>
                 <option value="team_leader" ${acc.role === 'team_leader' ? 'selected' : ''}>Team Leader</option>
                 <option value="judge" ${acc.role === 'judge' ? 'selected' : ''}>Judge</option>
+                <option value="spoc" ${acc.role === 'spoc' ? 'selected' : ''}>SPOC</option>
                 <option value="staff" ${acc.role === 'staff' ? 'selected' : ''}>Staff &amp; Club</option>
               </select>
             </td>
@@ -917,10 +939,100 @@ function closeRosterModal() {
   state.inspectRole = null;
 }
 
+function renderSpocViews() {
+  if (document.body.dataset.page !== 'spoc' || !state.user) return;
+  const myEmail = (state.user.email || '').toLowerCase();
+  const mySpocRows = state.spocs.filter((s) => (s.email || '').toLowerCase() === myEmail);
+  const myTeamIds = new Set(mySpocRows.map((s) => s.assigned_team_id).filter(Boolean));
+  const myTeams =
+    myTeamIds.size > 0
+      ? state.allTeams.filter((t) => myTeamIds.has(t.id))
+      : state.allTeams;
+
+  const updateMap = new Map(state.spocUpdates.map((u) => [u.team_id, u]));
+  const checkedCount = myTeams.filter((t) => updateMap.get(t.id)?.checked_in).length;
+  const deckCount = myTeams.filter((t) => updateMap.get(t.id)?.deck_verified).length;
+  const readyCount = myTeams.filter((t) => updateMap.get(t.id)?.pitch_ready).length;
+
+  document.getElementById('spoc-kpi-total').textContent = String(myTeams.length);
+  document.getElementById('spoc-kpi-checked').textContent = String(checkedCount);
+  document.getElementById('spoc-kpi-deck').textContent = String(deckCount);
+  document.getElementById('spoc-kpi-ready').textContent = String(readyCount);
+
+  document.getElementById('spoc-teams-grid').innerHTML = myTeams
+    .map((t) => {
+      const up = updateMap.get(t.id) || { checked_in: false, deck_verified: false, pitch_ready: false, spoc_notes: '' };
+      const assignedJudge = state.assignments.find((a) => a.team_id === t.id)?.judge_id || 'Unassigned';
+      return `
+        <article class="team-card">
+          <div class="team-card-header">
+            <span class="sem-label">${t.sem}</span>
+            <span class="status-pill ${up.pitch_ready ? 'is-evaluated' : up.checked_in ? 'is-drafted' : ''}">
+              ${up.pitch_ready ? 'PITCH READY' : up.checked_in ? 'CHECKED IN' : 'AWAITING'}
+            </span>
+          </div>
+          <h2 class="team-title">${t.name}</h2>
+          <div class="team-leader">Leader: ${t.leader} · Judge: ${assignedJudge}</div>
+          <div class="team-divider" aria-hidden="true"></div>
+          <div class="assign-pills">
+            <button type="button" class="assign-toggle ${up.checked_in ? 'is-assigned' : ''}" data-spoc-toggle="checked_in" data-team-id="${t.id}" data-val="${up.checked_in}">
+              ${up.checked_in ? '✓ ' : '+ '}Checked In
+            </button>
+            <button type="button" class="assign-toggle ${up.deck_verified ? 'is-assigned' : ''}" data-spoc-toggle="deck_verified" data-team-id="${t.id}" data-val="${up.deck_verified}">
+              ${up.deck_verified ? '✓ ' : '+ '}Deck OK
+            </button>
+            <button type="button" class="assign-toggle ${up.pitch_ready ? 'is-assigned' : ''}" data-spoc-toggle="pitch_ready" data-team-id="${t.id}" data-val="${up.pitch_ready}">
+              ${up.pitch_ready ? '✓ ' : '+ '}Pitch Ready
+            </button>
+          </div>
+          <div class="team-card-footer" style="margin-top: var(--space-2);">
+            <input type="text" class="search-input" style="min-width:0;flex:1;" placeholder="SPOC note..." value="${up.spoc_notes || ''}" data-spoc-note-input="${t.id}" />
+            <button type="button" class="btn-draft" data-spoc-save-note="${t.id}">SAVE</button>
+          </div>
+        </article>
+      `;
+    })
+    .join('');
+
+  document.getElementById('spoc-readiness-table-wrap').innerHTML = `
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Assigned Judge</th>
+          <th>Checked In</th>
+          <th>Deck Verified</th>
+          <th>Pitch Ready</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${myTeams
+          .map((t) => {
+            const up = updateMap.get(t.id) || { checked_in: false, deck_verified: false, pitch_ready: false, spoc_notes: '' };
+            const assignedJudge = state.assignments.find((a) => a.team_id === t.id)?.judge_id || 'Unassigned';
+            return `
+              <tr>
+                <td><strong>${t.name}</strong><br><span class="team-leader">${t.sem} · ${t.leader}</span></td>
+                <td>${assignedJudge}</td>
+                <td><span class="status-pill ${up.checked_in ? 'is-evaluated' : ''}">${up.checked_in ? 'YES' : 'NO'}</span></td>
+                <td><span class="status-pill ${up.deck_verified ? 'is-evaluated' : ''}">${up.deck_verified ? 'YES' : 'NO'}</span></td>
+                <td><span class="status-pill ${up.pitch_ready ? 'is-evaluated' : ''}">${up.pitch_ready ? 'READY' : 'WAIT'}</span></td>
+                <td class="team-leader">${up.spoc_notes || '—'}</td>
+              </tr>
+            `;
+          })
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 function renderAll() {
   renderKpis();
   renderTeamsGrid();
   renderAdminViews();
+  renderSpocViews();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1280,6 +1392,64 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Pitch time elapsed.');
       }
     }, 1000);
+  });
+
+  // SPOC Portal: Toggle readiness & save notes
+  document.getElementById('spoc-teams-grid')?.addEventListener('click', async (e) => {
+    if (!state.supabase || state.user?.role !== 'spoc') return;
+    const toggleBtn = e.target.closest('[data-spoc-toggle]');
+    if (toggleBtn) {
+      const teamId = toggleBtn.dataset.teamId;
+      const field = toggleBtn.dataset.spocToggle;
+      const nextVal = toggleBtn.dataset.val !== 'true';
+      const existing = state.spocUpdates.find((u) => u.team_id === teamId) || {
+        team_id: teamId,
+        checked_in: false,
+        deck_verified: false,
+        pitch_ready: false,
+        spoc_notes: ''
+      };
+      const payload = {
+        ...existing,
+        [field]: nextVal,
+        updated_by: state.user.username,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await state.supabase.from('spoc_updates').upsert(payload, { onConflict: 'team_id' });
+      if (!error) {
+        await writeAuditLog('SPOC_STATUS_UPDATED', teamId, `${field} -> ${nextVal}`);
+        showToast(`Updated ${field.replace('_', ' ')} for ${teamId}.`);
+        await syncFromSupabase();
+      }
+      return;
+    }
+
+    const saveNoteBtn = e.target.closest('[data-spoc-save-note]');
+    if (saveNoteBtn) {
+      const teamId = saveNoteBtn.dataset.spocSaveNote;
+      const input = document.querySelector(`[data-spoc-note-input="${teamId}"]`);
+      const note = input ? input.value.trim() : '';
+      const existing = state.spocUpdates.find((u) => u.team_id === teamId) || {
+        team_id: teamId,
+        checked_in: false,
+        deck_verified: false,
+        pitch_ready: false
+      };
+      const { error } = await state.supabase.from('spoc_updates').upsert(
+        {
+          ...existing,
+          spoc_notes: note,
+          updated_by: state.user.username,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'team_id' }
+      );
+      if (!error) {
+        await writeAuditLog('SPOC_NOTE_SAVED', teamId, note || 'Cleared note');
+        showToast(`Saved SPOC note for ${teamId}.`);
+        await syncFromSupabase();
+      }
+    }
   });
 
   // Deliverable link preview
