@@ -764,17 +764,17 @@ function renderAdminViews() {
 
   document.getElementById('spoc-allot-teams-grid').innerHTML = filteredAllotTeams
     .map((t, idx) => {
-      const checked = state.spocSelectedTeams.has(t.id);
       const owner = teamToSpoc.get(t.id);
-      const showDropdown = checked || state.spocOpenDropdownTeamId === t.id;
+      const isAssigned = Boolean(owner);
+      const showDropdown = isAssigned || state.spocOpenDropdownTeamId === t.id;
       const currentOwnerObj = allStaff.find((s) => s.teams.has(t.id));
       const currentOwnerEmail = currentOwnerObj ? currentOwnerObj.email.toLowerCase() : '';
       return `
-        <div class="spoc-team-tile ${checked ? 'is-checked' : ''}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${checked}" tabindex="0">
+        <div class="spoc-team-tile ${isAssigned ? 'is-checked' : ''}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${isAssigned}" tabindex="0">
           <div class="spoc-tile-top">
             <span class="spoc-idx" style="color:var(--accent-primary);">#${idx + 1}</span>
             <span class="status-pill">${t.sem}</span>
-            <input type="checkbox" class="remember-check spoc-tile-checkbox" data-spoc-checkbox="${t.id}" ${showDropdown ? 'checked' : ''} aria-label="Assign SPOC for ${t.name}" />
+            <input type="checkbox" class="remember-check spoc-tile-checkbox" data-spoc-checkbox="${t.id}" ${isAssigned ? 'checked' : ''} aria-label="Assign SPOC for ${t.name}" />
           </div>
           <div class="spoc-tile-title">${t.name}</div>
           <div class="spoc-tile-meta">
@@ -1381,24 +1381,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('spoc-allot-teams-grid')?.addEventListener('click', (e) => {
     if (e.target.closest('.spoc-inline-select')) return;
-    const cb = e.target.closest('[data-spoc-checkbox]');
     const tile = e.target.closest('[data-toggle-spoc-team]');
     if (!tile) return;
     const tid = tile.dataset.toggleSpocTeam;
-    if (cb) {
-      state.spocOpenDropdownTeamId = cb.checked ? tid : null;
-      if (cb.checked) state.spocSelectedTeams.add(tid);
-      else state.spocSelectedTeams.delete(tid);
-      renderAdminViews();
-      return;
-    }
-    if (state.spocSelectedTeams.has(tid)) {
-      state.spocSelectedTeams.delete(tid);
-      if (state.spocOpenDropdownTeamId === tid) state.spocOpenDropdownTeamId = null;
-    } else {
-      state.spocSelectedTeams.add(tid);
-      state.spocOpenDropdownTeamId = tid;
-    }
+    state.spocOpenDropdownTeamId = state.spocOpenDropdownTeamId === tid ? null : tid;
     renderAdminViews();
   });
 
