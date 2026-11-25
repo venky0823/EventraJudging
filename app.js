@@ -644,8 +644,11 @@ function renderAdminViews() {
         </div>
         <div class="assign-pills">
           <span class="status-pill ${r.status === 'ACTIVE' ? 'is-evaluated' : r.status === 'LOCKED' ? 'is-drafted' : ''}">${r.status}</span>
-          <button type="button" class="btn-draft" data-round-status="${r.id}" data-next-status="ACTIVE">Set Active</button>
-          <button type="button" class="btn-draft" data-round-status="${r.id}" data-next-status="LOCKED">Lock</button>
+          <select class="round-select" data-round-select="${r.id}" aria-label="Status for ${r.name}">
+            <option value="ACTIVE" ${r.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+            <option value="UPCOMING" ${r.status === 'UPCOMING' ? 'selected' : ''}>UPCOMING</option>
+            <option value="LOCKED" ${r.status === 'LOCKED' ? 'selected' : ''}>LOCKED</option>
+          </select>
         </div>
       </div>
     `
@@ -1286,11 +1289,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Admin: Rounds & Criteria actions
-  document.getElementById('admin-rounds-list')?.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-round-status]');
-    if (!btn || !isAdmin() || !state.supabase) return;
-    const roundId = btn.dataset.roundStatus;
-    const nextStatus = btn.dataset.nextStatus;
+  document.getElementById('admin-rounds-list')?.addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-round-select]');
+    if (!sel || !isAdmin() || !state.supabase) return;
+    const roundId = sel.dataset.roundSelect;
+    const nextStatus = sel.value;
     const { error } = await state.supabase.from('evaluation_rounds').update({ status: nextStatus }).eq('id', roundId);
     if (error) {
       showToast('Failed to update round status.');
