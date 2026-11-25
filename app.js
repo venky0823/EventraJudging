@@ -32,6 +32,7 @@ const state = {
   timerInterval: null,
   timerSeconds: 300,
   supabase: null,
+  realtimeChannel: null,
   user: loadSavedUser(),
   judgeId: window.EVENTRA_CONFIG?.JUDGE_ID || 'judge-04'
 };
@@ -76,7 +77,41 @@ function applyAuthUI() {
     if (authTitleEl) authTitleEl.textContent = `${state.user.display_name} (${state.user.role.toUpperCase()})`;
     if (signoutEl) signoutEl.textContent = `SIGN OUT (${state.user.role.toUpperCase()})`;
     syncFromSupabase();
+    setupRealtimeSync();
   }
+}
+
+function setupRealtimeSync() {
+  if (!state.supabase) return;
+  if (state.realtimeChannel) {
+    state.supabase.removeChannel(state.realtimeChannel);
+    state.realtimeChannel = null;
+  }
+
+  state.realtimeChannel = state.supabase
+    .channel('eventra-live-sync')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'teams' },
+      () => {
+        syncFromSupabase();
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'evaluations' },
+      (payload) => {
+        const changedJudge = payload.new?.judge_id || payload.old?.judge_id;
+        if (!changedJudge || changedJudge === state.judgeId) {
+          syncFromSupabase();
+        }
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        setSyncStatus('Realtime Live');
+      }
+    });
 }
 
 function initSupabaseClient() {
@@ -154,7 +189,7 @@ async function syncFromSupabase() {
         openTeamEvaluation(state.activeTeamId);
       }
     }
-    setSyncStatus('Supabase Connected');
+    setSyncStatus(state.realtimeChannel ? 'Realtime Live' : 'Supabase Connected');
   } catch (err) {
     console.error('Supabase sync failed:', err);
     setSyncStatus('Sync Error (Local Fallback)');
@@ -182,7 +217,7 @@ async function upsertEvaluationToSupabase(team) {
         { onConflict: 'team_id,judge_id' }
       );
     if (error) throw error;
-    setSyncStatus('Supabase Connected');
+    setSyncStatus(state.realtimeChannel ? 'Realtime Live' : 'Supabase Connected');
   } catch (err) {
     console.error('Supabase upsert failed:', err);
     setSyncStatus('Save Error (Cached Locally)');
@@ -573,9 +608,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Sign out
   document.getElementById('btn-sign-out').addEventListener('click', () => {
+    if (state.supabase && state.realtimeChannel) {
+      state.supabase.removeChannel(state.realtimeChannel);
+      state.realtimeChannel = null;
+    }
     clearSessionUser();
     state.user = null;
     applyAuthUI();
     showToast('Signed out.');
+  });
+
+  // Refresh from Supabase when tab regains focus
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.user && state.supabase) {
+      syncFromSupabase();
+    }
   });
 });
