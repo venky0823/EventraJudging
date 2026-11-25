@@ -423,28 +423,71 @@
         </section>
       </div>
 
-      <!-- View: Admin SPOC Management -->
+      <!-- View: Admin SPOC Management (Staff SPOC Allotment Console) -->
       <div id="view-admin-spocs" class="view-panel" hidden>
         <section class="admin-panel" aria-labelledby="admin-spocs-title">
           <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // SPOC MANAGEMENT</div>
+            <div class="rubrics-kicker">ADMINISTRATION // SPOC ALLOTMENT</div>
             <h1 id="admin-spocs-title" class="rubrics-title">SPOC MANAGEMENT</h1>
-            <p class="rubrics-sub">Manage Single Points of Contact (SPOCs) assigned to teams and departments.</p>
+            <p class="rubrics-sub">Select a Staff SPOC on the left and allot or reassign teams in real time.</p>
           </div>
 
-          <form id="admin-add-spoc-form" class="admin-form-card">
-            <div class="admin-form-grid">
-              <input type="text" id="new-spoc-name" class="search-input" placeholder="SPOC Name" required />
-              <input type="email" id="new-spoc-email" class="search-input" placeholder="Email" required />
-              <input type="text" id="new-spoc-phone" class="search-input" placeholder="Phone (+91 ...)" />
-              <input type="text" id="new-spoc-team" class="search-input" list="spoc-team-options" placeholder="Team Name (e.g. CYBER TITANS)" />
-              <datalist id="spoc-team-options"></datalist>
-              <button type="submit" class="btn-evaluate">ADD SPOC →</button>
-            </div>
-          </form>
+          <div class="spoc-console-layout">
+            <!-- Left: Staff SPOCs List -->
+            <aside class="spoc-list-panel" aria-label="Staff SPOCs list">
+              <div class="spoc-list-top">
+                <div>
+                  <h2 class="spoc-panel-title">STAFF SPOCS (<span id="spoc-total-count">0</span>)</h2>
+                  <div class="team-leader" id="spoc-summary-sub">0 assigned · 0 unassigned</div>
+                </div>
+                <div class="spoc-top-btns">
+                  <button type="button" class="btn-tk btn-tk-cyan" id="btn-spoc-autobalance">AUTO-BALANCE</button>
+                  <button type="button" class="btn-signin-mini" id="btn-spoc-save-all">SAVE ALLOTMENT</button>
+                </div>
+              </div>
 
-          <div class="admin-table-card">
-            <div class="table-wrap" id="admin-spocs-table-wrap"></div>
+              <input type="search" id="spoc-staff-search" class="search-input" style="min-width:0;width:100%;" placeholder="Search staff by name or email..." aria-label="Search staff SPOCs" />
+              <select id="spoc-staff-filter" class="round-select" style="width:100%;" aria-label="Filter staff by assignment status">
+                <option value="all">ALL STAFF</option>
+                <option value="assigned">Assigned Only</option>
+                <option value="unassigned">Unassigned Only</option>
+              </select>
+
+              <div id="spoc-staff-list" class="spoc-staff-list"></div>
+            </aside>
+
+            <!-- Right: Allotment Console -->
+            <div class="spoc-allot-panel">
+              <div class="spoc-allot-header">
+                <div class="spoc-selected-id">
+                  <span class="spoc-avatar" id="spoc-active-avatar">AN</span>
+                  <div>
+                    <div class="rubrics-kicker">STAFF SPOC ALLOTMENT CONSOLE</div>
+                    <h2 class="spoc-active-name" id="spoc-active-name">SELECT A SPOC</h2>
+                    <div class="team-leader" id="spoc-active-email">—</div>
+                  </div>
+                </div>
+                <div class="spoc-allot-actions">
+                  <button type="button" class="btn-draft" id="btn-spoc-select-filtered">SELECT FILTERED (0)</button>
+                  <button type="button" class="btn-danger-ghost" id="btn-spoc-clear-selected">CLEAR SELECTED</button>
+                </div>
+              </div>
+
+              <div class="spoc-filter-bar">
+                <input type="search" id="spoc-team-search" class="search-input" style="min-width:0;flex:1;" placeholder="Search available teams by name or leader..." aria-label="Search available teams" />
+                <select id="spoc-track-filter" class="round-select" aria-label="Filter teams by semester">
+                  <option value="all">ALL TRACKS</option>
+                  <option value="1ST SEM">1ST SEM</option>
+                  <option value="3RD SEM">3RD SEM</option>
+                </select>
+                <label class="remember-row">
+                  <input type="checkbox" id="spoc-show-allotted" class="remember-check" checked />
+                  <span>Show already allotted</span>
+                </label>
+              </div>
+
+              <div id="spoc-allot-teams-grid" class="spoc-teams-grid"></div>
+            </div>
           </div>
         </section>
       </div>
@@ -497,6 +540,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=16" defer></script>
+  <script src="./app.js?v=17" defer></script>
 </body>
 </html>

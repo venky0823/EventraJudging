@@ -33,6 +33,13 @@ const state = {
   auditLogs: [],
   resultsEngine: 'Draft / Unreleased',
   inspectRole: null,
+  activeSpocEmail: null,
+  spocSelectedTeams: new Set(),
+  spocStaffSearch: '',
+  spocStaffFilter: 'all',
+  spocTeamSearch: '',
+  spocTrackFilter: 'all',
+  spocShowAllotted: true,
   round: 'all',
   assignFilter: '',
   auditFilter: '',
@@ -671,48 +678,106 @@ function renderAdminViews() {
     </table>
   `;
 
-  // 5. SPOC Management
-  const teamDatalist = document.getElementById('spoc-team-options');
-  if (teamDatalist) {
-    teamDatalist.innerHTML = state.allTeams.map((t) => `<option value="${t.name}"></option>`).join('');
+  // 5. Staff SPOC Allotment Console
+  const staffMap = new Map();
+  state.spocs.forEach((s) => {
+    const key = (s.email || s.name).toLowerCase();
+    if (!staffMap.has(key)) {
+      staffMap.set(key, {
+        name: s.name,
+        email: s.email,
+        phone: s.phone || '',
+        department: s.department || 'CSE',
+        teams: new Set()
+      });
+    }
+    if (s.assigned_team_id) staffMap.get(key).teams.add(s.assigned_team_id);
+  });
+
+  const allStaff = Array.from(staffMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  const assignedStaffCount = allStaff.filter((s) => s.teams.size > 0).length;
+  document.getElementById('spoc-total-count').textContent = String(allStaff.length);
+  document.getElementById('spoc-summary-sub').textContent = `${assignedStaffCount} assigned · ${allStaff.length - assignedStaffCount} unassigned`;
+
+  if (!state.activeSpocEmail && allStaff.length > 0) {
+    state.activeSpocEmail = allStaff[0].email.toLowerCase();
+    state.spocSelectedTeams = new Set(allStaff[0].teams);
   }
 
-  document.getElementById('admin-spocs-table-wrap').innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>SPOC Name</th>
-          <th>Contact</th>
-          <th>Team Name</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${state.spocs
-          .map((s) => {
-            const teamObj = state.allTeams.find((t) => t.id === s.assigned_team_id);
-            return `
-              <tr>
-                <td><strong>${s.name}</strong><br><span class="team-leader">${s.department}</span></td>
-                <td>${s.email}<br><span class="team-leader">${s.phone || '—'}</span></td>
-                <td><strong>${teamObj ? teamObj.name : 'Unassigned'}</strong></td>
-                <td><span class="status-pill ${s.status === 'ACTIVE' ? 'is-evaluated' : 'is-drafted'}">${s.status}</span></td>
-                <td>
-                  <div class="assign-pills">
-                    <button type="button" class="btn-draft" data-toggle-spoc="${s.id}" data-spoc-status="${s.status}">
-                      ${s.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button type="button" class="btn-danger-ghost" data-delete-spoc="${s.id}">REMOVE</button>
-                  </div>
-                </td>
-              </tr>
-            `;
-          })
-          .join('')}
-      </tbody>
-    </table>
-  `;
+  const staffQ = state.spocStaffSearch.trim().toLowerCase();
+  const filteredStaff = allStaff.filter((s) => {
+    const matchText = s.name.toLowerCase().includes(staffQ) || s.email.toLowerCase().includes(staffQ);
+    if (!matchText) return false;
+    if (state.spocStaffFilter === 'assigned') return s.teams.size > 0;
+    if (state.spocStaffFilter === 'unassigned') return s.teams.size === 0;
+    return true;
+  });
+
+  document.getElementById('spoc-staff-list').innerHTML = filteredStaff
+    .map((s, idx) => {
+      const emailKey = s.email.toLowerCase();
+      const selected = emailKey === state.activeSpocEmail;
+      const initials = s.name.slice(0, 2).toUpperCase();
+      return `
+        <button type="button" class="spoc-staff-item ${selected ? 'is-selected' : ''}" data-select-spoc="${emailKey}">
+          <div class="spoc-staff-left">
+            <span class="spoc-idx">#${idx + 1}</span>
+            <span class="spoc-avatar">${initials}</span>
+            <div style="min-width:0;">
+              <div class="spoc-tile-title">${s.name}</div>
+              <div class="team-leader" style="font-size:10px;">${s.email}</div>
+            </div>
+          </div>
+          <span class="status-pill ${s.teams.size > 0 ? 'is-evaluated' : ''}">${s.teams.size > 0 ? `${s.teams.size} TEAM${s.teams.size > 1 ? 'S' : ''}` : 'UNASSIGNED'}</span>
+        </button>
+      `;
+    })
+    .join('');
+
+  const activeStaff = staffMap.get(state.activeSpocEmail);
+  if (activeStaff) {
+    document.getElementById('spoc-active-avatar').textContent = activeStaff.name.slice(0, 2).toUpperCase();
+    document.getElementById('spoc-active-name').textContent = activeStaff.name;
+    document.getElementById('spoc-active-email').textContent = activeStaff.email;
+  }
+
+  // Build map of which team is allotted to which SPOC
+  const teamToSpoc = new Map();
+  allStaff.forEach((s) => {
+    s.teams.forEach((tid) => teamToSpoc.set(tid, s.name));
+  });
+
+  const tq = state.spocTeamSearch.trim().toLowerCase();
+  const filteredAllotTeams = state.allTeams.filter((t) => {
+    const matchText = t.name.toLowerCase().includes(tq) || t.leader.toLowerCase().includes(tq);
+    const matchTrack = state.spocTrackFilter === 'all' || t.sem === state.spocTrackFilter;
+    const owner = teamToSpoc.get(t.id);
+    const matchAvail = state.spocShowAllotted || !owner || state.spocSelectedTeams.has(t.id);
+    return matchText && matchTrack && matchAvail;
+  });
+
+  document.getElementById('btn-spoc-select-filtered').textContent = `SELECT FILTERED (${filteredAllotTeams.length})`;
+
+  document.getElementById('spoc-allot-teams-grid').innerHTML = filteredAllotTeams
+    .map((t, idx) => {
+      const checked = state.spocSelectedTeams.has(t.id);
+      const owner = teamToSpoc.get(t.id);
+      return `
+        <div class="spoc-team-tile ${checked ? 'is-checked' : ''}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${checked}" tabindex="0">
+          <div class="spoc-tile-top">
+            <span class="spoc-idx" style="color:var(--accent-primary);">#${idx + 1}</span>
+            <span class="status-pill">${t.sem}</span>
+            <input type="checkbox" class="remember-check" ${checked ? 'checked' : ''} tabindex="-1" aria-hidden="true" />
+          </div>
+          <div class="spoc-tile-title">${t.name}</div>
+          <div class="spoc-tile-meta">
+            <span class="team-leader">${t.leader}</span>
+            <span class="${owner ? 'spoc-taken' : 'spoc-avail'}">${owner ? `Allotted: ${owner}` : 'Available'}</span>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
 
   // 6. Audit Logs
   const aq = state.auditFilter.trim().toLowerCase();
@@ -1254,73 +1319,150 @@ document.addEventListener('DOMContentLoaded', () => {
     await syncFromSupabase();
   });
 
-  // Admin: SPOC Management
-  document.getElementById('admin-add-spoc-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!isAdmin() || !state.supabase) return;
-    const name = document.getElementById('new-spoc-name').value.trim();
-    const email = document.getElementById('new-spoc-email').value.trim();
-    const phone = document.getElementById('new-spoc-phone').value.trim();
-    const teamInput = document.getElementById('new-spoc-team').value.trim();
+  // Admin: Staff SPOC Allotment Console events
+  document.getElementById('spoc-staff-search')?.addEventListener('input', (e) => {
+    state.spocStaffSearch = e.target.value;
+    renderAdminViews();
+  });
 
-    let assignedTeamId = null;
-    if (teamInput) {
-      const matched = state.allTeams.find(
-        (t) => t.name.toLowerCase() === teamInput.toLowerCase() || t.id.toLowerCase() === teamInput.toLowerCase()
-      );
-      if (matched) {
-        assignedTeamId = matched.id;
-      } else {
-        const newId = teamInput.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        const { error: teamErr } = await state.supabase.from('teams').insert({
-          id: newId,
-          name: teamInput.toUpperCase(),
-          leader: name,
-          sem: '1ST SEM',
-          round: '1',
-          members: 4
-        });
-        if (!teamErr) assignedTeamId = newId;
-      }
-    }
+  document.getElementById('spoc-staff-filter')?.addEventListener('change', (e) => {
+    state.spocStaffFilter = e.target.value;
+    renderAdminViews();
+  });
 
-    const { error } = await state.supabase.from('spocs').insert({
-      name,
-      email,
-      phone,
-      assigned_team_id: assignedTeamId,
-      status: 'ACTIVE'
+  document.getElementById('spoc-team-search')?.addEventListener('input', (e) => {
+    state.spocTeamSearch = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('spoc-track-filter')?.addEventListener('change', (e) => {
+    state.spocTrackFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('spoc-show-allotted')?.addEventListener('change', (e) => {
+    state.spocShowAllotted = e.target.checked;
+    renderAdminViews();
+  });
+
+  document.getElementById('spoc-staff-list')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-select-spoc]');
+    if (!btn) return;
+    state.activeSpocEmail = btn.dataset.selectSpoc;
+    const teamsForSpoc = state.spocs
+      .filter((s) => (s.email || '').toLowerCase() === state.activeSpocEmail && s.assigned_team_id)
+      .map((s) => s.assigned_team_id);
+    state.spocSelectedTeams = new Set(teamsForSpoc);
+    renderAdminViews();
+  });
+
+  document.getElementById('spoc-allot-teams-grid')?.addEventListener('click', (e) => {
+    const tile = e.target.closest('[data-toggle-spoc-team]');
+    if (!tile) return;
+    const tid = tile.dataset.toggleSpocTeam;
+    if (state.spocSelectedTeams.has(tid)) state.spocSelectedTeams.delete(tid);
+    else state.spocSelectedTeams.add(tid);
+    renderAdminViews();
+  });
+
+  document.getElementById('btn-spoc-select-filtered')?.addEventListener('click', () => {
+    document.querySelectorAll('#spoc-allot-teams-grid [data-toggle-spoc-team]').forEach((el) => {
+      state.spocSelectedTeams.add(el.dataset.toggleSpocTeam);
     });
+    renderAdminViews();
+  });
+
+  document.getElementById('btn-spoc-clear-selected')?.addEventListener('click', () => {
+    state.spocSelectedTeams.clear();
+    renderAdminViews();
+  });
+
+  document.getElementById('btn-spoc-save-all')?.addEventListener('click', async () => {
+    if (!isAdmin() || !state.supabase || !state.activeSpocEmail) return;
+    const sample = state.spocs.find((s) => (s.email || '').toLowerCase() === state.activeSpocEmail);
+    if (!sample) return;
+
+    await state.supabase.from('spocs').delete().ilike('email', sample.email);
+    const selected = Array.from(state.spocSelectedTeams);
+    const rows =
+      selected.length > 0
+        ? selected.map((tid) => ({
+            name: sample.name,
+            email: sample.email,
+            phone: sample.phone,
+            department: sample.department,
+            assigned_team_id: tid,
+            status: 'ACTIVE'
+          }))
+        : [
+            {
+              name: sample.name,
+              email: sample.email,
+              phone: sample.phone,
+              department: sample.department,
+              assigned_team_id: null,
+              status: 'ACTIVE'
+            }
+          ];
+
+    const { error } = await state.supabase.from('spocs').insert(rows);
     if (error) {
-      showToast('Could not add SPOC.');
+      showToast('Failed to save SPOC allotment.');
       return;
     }
-    await writeAuditLog('SPOC_ADDED', name, teamInput ? `Team: ${teamInput}` : email);
-    e.target.reset();
-    showToast(`Added SPOC ${name}.`);
+    await writeAuditLog('SPOC_ALLOTMENT_SAVED', sample.name, `${selected.length} team(s) allotted`);
+    showToast(`Saved ${selected.length} team(s) for ${sample.name}.`);
     await syncFromSupabase();
   });
 
-  document.getElementById('admin-spocs-table-wrap')?.addEventListener('click', async (e) => {
+  document.getElementById('btn-spoc-autobalance')?.addEventListener('click', async () => {
     if (!isAdmin() || !state.supabase) return;
-    const toggleBtn = e.target.closest('[data-toggle-spoc]');
-    if (toggleBtn) {
-      const id = toggleBtn.dataset.toggleSpoc;
-      const next = toggleBtn.dataset.spocStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-      await state.supabase.from('spocs').update({ status: next }).eq('id', id);
-      await writeAuditLog('SPOC_STATUS', id, `Changed to ${next}`);
-      showToast(`SPOC marked ${next}.`);
-      await syncFromSupabase();
+    const uniqueStaff = [];
+    const seen = new Set();
+    state.spocs.forEach((s) => {
+      const k = (s.email || '').toLowerCase();
+      if (!seen.has(k)) {
+        seen.add(k);
+        uniqueStaff.push(s);
+      }
+    });
+    if (uniqueStaff.length === 0 || state.allTeams.length === 0) return;
+
+    // Clear existing team links and evenly distribute teams round-robin
+    await state.supabase.from('spocs').delete().neq('email', '');
+    const inserts = state.allTeams.map((t, idx) => {
+      const st = uniqueStaff[idx % uniqueStaff.length];
+      return {
+        name: st.name,
+        email: st.email,
+        phone: st.phone,
+        department: st.department,
+        assigned_team_id: t.id,
+        status: 'ACTIVE'
+      };
+    });
+    // Ensure SPOCs with 0 teams still remain in the list
+    uniqueStaff.forEach((st, idx) => {
+      if (idx >= state.allTeams.length) {
+        inserts.push({
+          name: st.name,
+          email: st.email,
+          phone: st.phone,
+          department: st.department,
+          assigned_team_id: null,
+          status: 'ACTIVE'
+        });
+      }
+    });
+
+    const { error } = await state.supabase.from('spocs').insert(inserts);
+    if (error) {
+      showToast('Auto-balance failed.');
       return;
     }
-    const delBtn = e.target.closest('[data-delete-spoc]');
-    if (delBtn) {
-      const id = delBtn.dataset.deleteSpoc;
-      await state.supabase.from('spocs').delete().eq('id', id);
-      await writeAuditLog('SPOC_REMOVED', id, 'Removed from registry');
-      showToast('Removed SPOC.');
-      await syncFromSupabase();
-    }
+    await writeAuditLog('SPOC_AUTOBALANCED', 'All Staff SPOCs', `${state.allTeams.length} teams distributed`);
+    showToast('Auto-balanced all teams across Staff SPOCs.');
+    await syncFromSupabase();
   });
 
   // Admin: Audit search
