@@ -672,18 +672,18 @@ function renderAdminViews() {
   `;
 
   // 5. SPOC Management
-  const teamSelect = document.getElementById('new-spoc-team');
-  if (teamSelect) {
-    teamSelect.innerHTML = `<option value="">Unassigned</option>` + state.allTeams.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
+  const teamDatalist = document.getElementById('spoc-team-options');
+  if (teamDatalist) {
+    teamDatalist.innerHTML = state.allTeams.map((t) => `<option value="${t.name}"></option>`).join('');
   }
 
   document.getElementById('admin-spocs-table-wrap').innerHTML = `
     <table class="admin-table">
       <thead>
         <tr>
-          <th>Name</th>
+          <th>SPOC Name</th>
           <th>Contact</th>
-          <th>Assigned Team</th>
+          <th>Team Name</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -696,7 +696,7 @@ function renderAdminViews() {
               <tr>
                 <td><strong>${s.name}</strong><br><span class="team-leader">${s.department}</span></td>
                 <td>${s.email}<br><span class="team-leader">${s.phone || '—'}</span></td>
-                <td>${teamObj ? teamObj.name : 'Unassigned'}</td>
+                <td><strong>${teamObj ? teamObj.name : 'Unassigned'}</strong></td>
                 <td><span class="status-pill ${s.status === 'ACTIVE' ? 'is-evaluated' : 'is-drafted'}">${s.status}</span></td>
                 <td>
                   <div class="assign-pills">
@@ -1261,7 +1261,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.getElementById('new-spoc-name').value.trim();
     const email = document.getElementById('new-spoc-email').value.trim();
     const phone = document.getElementById('new-spoc-phone').value.trim();
-    const assignedTeamId = document.getElementById('new-spoc-team').value || null;
+    const teamInput = document.getElementById('new-spoc-team').value.trim();
+
+    let assignedTeamId = null;
+    if (teamInput) {
+      const matched = state.allTeams.find(
+        (t) => t.name.toLowerCase() === teamInput.toLowerCase() || t.id.toLowerCase() === teamInput.toLowerCase()
+      );
+      if (matched) {
+        assignedTeamId = matched.id;
+      } else {
+        const newId = teamInput.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const { error: teamErr } = await state.supabase.from('teams').insert({
+          id: newId,
+          name: teamInput.toUpperCase(),
+          leader: name,
+          sem: '1ST SEM',
+          round: '1',
+          members: 4
+        });
+        if (!teamErr) assignedTeamId = newId;
+      }
+    }
+
     const { error } = await state.supabase.from('spocs').insert({
       name,
       email,
@@ -1273,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Could not add SPOC.');
       return;
     }
-    await writeAuditLog('SPOC_ADDED', name, email);
+    await writeAuditLog('SPOC_ADDED', name, teamInput ? `Team: ${teamInput}` : email);
     e.target.reset();
     showToast(`Added SPOC ${name}.`);
     await syncFromSupabase();

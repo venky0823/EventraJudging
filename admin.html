@@ -434,10 +434,11 @@
 
           <form id="admin-add-spoc-form" class="admin-form-card">
             <div class="admin-form-grid">
-              <input type="text" id="new-spoc-name" class="search-input" placeholder="SPOC Full Name" required />
+              <input type="text" id="new-spoc-name" class="search-input" placeholder="SPOC Name" required />
               <input type="email" id="new-spoc-email" class="search-input" placeholder="Email" required />
               <input type="text" id="new-spoc-phone" class="search-input" placeholder="Phone (+91 ...)" />
-              <select id="new-spoc-team" class="round-select" aria-label="Assigned Team"></select>
+              <input type="text" id="new-spoc-team" class="search-input" list="spoc-team-options" placeholder="Team Name (e.g. CYBER TITANS)" />
+              <datalist id="spoc-team-options"></datalist>
               <button type="submit" class="btn-evaluate">ADD SPOC →</button>
             </div>
           </form>
@@ -496,6 +497,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=15" defer></script>
+  <script src="./app.js?v=16" defer></script>
 </body>
 </html>
