@@ -371,12 +371,30 @@ async function toggleAssignment(teamId, judgeId, currentlyAssigned) {
       await writeAuditLog('JUDGE_UNASSIGNED', teamId, `Removed ${judgeId}`);
       showToast(`Unassigned ${judgeId} from ${teamId}.`);
     } else {
+      // Enforce max 1 judge per team: remove any existing assignment for this team first
+      const existing = state.assignments.find((a) => a.team_id === teamId);
+      if (existing) {
+        const { error: delErr } = await state.supabase
+          .from('judge_assignments')
+          .delete()
+          .eq('team_id', teamId);
+        if (delErr) throw delErr;
+      }
+
       const { error } = await state.supabase
         .from('judge_assignments')
         .insert({ team_id: teamId, judge_id: judgeId, assigned_by: state.user.username });
       if (error) throw error;
-      await writeAuditLog('JUDGE_ASSIGNED', teamId, `Assigned ${judgeId}`);
-      showToast(`Assigned ${judgeId} to ${teamId}.`);
+      await writeAuditLog(
+        'JUDGE_ASSIGNED',
+        teamId,
+        existing ? `Switched ${existing.judge_id} -> ${judgeId}` : `Assigned ${judgeId}`
+      );
+      showToast(
+        existing
+          ? `Switched ${teamId} to ${judgeId} (max 1 judge per team).`
+          : `Assigned ${judgeId} to ${teamId}.`
+      );
     }
     await syncFromSupabase();
   } catch (err) {
@@ -509,7 +527,7 @@ function renderAdminViews() {
           <th>Team</th>
           <th>Semester</th>
           <th>Round</th>
-          <th>Assigned Judges (Click to Toggle)</th>
+          <th>Assigned Judge (Max 1 per Team)</th>
         </tr>
       </thead>
       <tbody>
