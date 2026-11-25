@@ -11,6 +11,7 @@
 
 html {
   margin: 0;
+  color-scheme: dark;
   scroll-behavior: smooth;
   background-color: var(--bg-color);
   color: var(--color-10);
@@ -665,11 +666,17 @@ html,
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
-  background-color: var(--surface-elevated);
+  background-color: var(--surface-color);
   color: var(--color-10);
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   cursor: pointer;
+}
+
+select option,
+.round-select option {
+  background-color: var(--surface-color);
+  color: var(--color-10);
 }
 
 /* 4-Column KPI Strip */
