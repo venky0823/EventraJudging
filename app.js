@@ -102,33 +102,38 @@ function showView(viewId) {
 }
 
 function applyAuthUI() {
-  const loginScreen = document.getElementById('login-screen');
-  const appShell = document.getElementById('app-shell');
-  const isAuthed = Boolean(state.user);
+  const page = document.body.dataset.page || 'login';
+  const user = state.user;
 
-  loginScreen.hidden = isAuthed;
-  appShell.hidden = !isAuthed;
+  if (page === 'login') {
+    if (user) {
+      window.location.replace(user.role === 'admin' ? './admin.html' : './judge.html');
+    }
+    return;
+  }
 
-  if (!isAuthed) return;
+  if (!user) {
+    window.location.replace('./index.html');
+    return;
+  }
 
-  state.judgeId = state.user.username || 'judge-04';
-  const admin = isAdmin();
+  if (page === 'admin' && user.role !== 'admin') {
+    window.location.replace('./judge.html');
+    return;
+  }
 
-  document.querySelectorAll('.admin-only').forEach((el) => {
-    el.hidden = !admin;
-  });
+  if (page === 'judge' && user.role === 'admin') {
+    window.location.replace('./admin.html');
+    return;
+  }
 
-  const titleEl = document.querySelector('.portal-title');
-  const subEl = document.querySelector('.portal-subtitle');
-  const authTitleEl = document.querySelector('.jury-auth-title');
-  const signoutEl = document.querySelector('#btn-sign-out span');
+  state.judgeId = user.username || 'judge-04';
+  const authLabel = document.getElementById('sidebar-user-label');
+  if (authLabel) {
+    authLabel.textContent = `${user.display_name} (${user.role.toUpperCase()})`;
+  }
 
-  if (titleEl) titleEl.textContent = admin ? 'ADMIN PORTAL' : 'JUDGE PORTAL';
-  if (subEl) subEl.textContent = admin ? 'FULL SYSTEM CONTROL' : 'EVALUATION COMMITTEE';
-  if (authTitleEl) authTitleEl.textContent = `${state.user.display_name} (${state.user.role.toUpperCase()})`;
-  if (signoutEl) signoutEl.textContent = `SIGN OUT (${state.user.role.toUpperCase()})`;
-
-  const defaultView = admin ? 'admin-overview' : 'teams';
+  const defaultView = page === 'admin' ? 'admin-overview' : 'teams';
   setActiveNav(defaultView);
   showView(defaultView);
 
@@ -395,6 +400,7 @@ function getVisibleTeams() {
 }
 
 function renderKpis() {
+  if (document.body.dataset.page !== 'judge') return;
   const visible = getVisibleTeams();
   document.getElementById('kpi-total').textContent = String(visible.length);
   document.getElementById('kpi-evaluated').textContent = String(visible.filter((t) => t.status === 'EVALUATED').length);
@@ -403,6 +409,7 @@ function renderKpis() {
 }
 
 function renderTeamsGrid() {
+  if (document.body.dataset.page !== 'judge') return;
   const grid = document.getElementById('teams-grid');
   const visible = getVisibleTeams();
   const maxTotal = maxPossibleScore();
@@ -447,7 +454,7 @@ function renderTeamsGrid() {
 }
 
 function renderAdminViews() {
-  if (!isAdmin()) return;
+  if (!isAdmin() || document.body.dataset.page !== 'admin') return;
 
   const maxTotal = maxPossibleScore();
   const submittedCount = state.allEvaluations.filter((e) => e.status === 'EVALUATED').length;
@@ -900,17 +907,19 @@ function renderAll() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initSupabaseClient();
-  renderAll();
   applyAuthUI();
+  if (document.body.dataset.page !== 'login') {
+    renderAll();
+  }
 
   // Password visibility toggle
-  document.getElementById('btn-toggle-pw').addEventListener('click', () => {
+  document.getElementById('btn-toggle-pw')?.addEventListener('click', () => {
     const pwInput = document.getElementById('login-password');
     pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
   });
 
   // Login form submit
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
+  document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const identifier = document.getElementById('login-identifier').value.trim();
     const password = document.getElementById('login-password').value;
@@ -1169,25 +1178,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Round filter (Judge view)
-  document.getElementById('round-select').addEventListener('change', (e) => {
+  document.getElementById('round-select')?.addEventListener('change', (e) => {
     state.round = e.target.value;
     renderAll();
   });
 
   // Open Team Evaluation page
-  document.getElementById('teams-grid').addEventListener('click', (e) => {
+  document.getElementById('teams-grid')?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-team-id]');
     if (btn) openTeamEvaluation(btn.dataset.teamId);
   });
 
   // Back to Assigned Teams
-  document.getElementById('btn-back-teams').addEventListener('click', () => {
+  document.getElementById('btn-back-teams')?.addEventListener('click', () => {
     showView('teams');
     setActiveNav('teams');
   });
 
   // Slider live updates
-  document.getElementById('eval-criteria-list').addEventListener('input', (e) => {
+  document.getElementById('eval-criteria-list')?.addEventListener('input', (e) => {
     const team = state.teams.find((t) => t.id === state.activeTeamId);
     if (!team || !e.target.matches('.score-slider')) return;
     const cid = e.target.dataset.criterion;
@@ -1200,7 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Save Draft
-  document.getElementById('btn-save-draft').addEventListener('click', async () => {
+  document.getElementById('btn-save-draft')?.addEventListener('click', async () => {
     const team = state.teams.find((t) => t.id === state.activeTeamId);
     if (!team) return;
     team.status = 'DRAFTED';
@@ -1210,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Submit Final Evaluation
-  document.getElementById('btn-submit-eval').addEventListener('click', async () => {
+  document.getElementById('btn-submit-eval')?.addEventListener('click', async () => {
     const team = state.teams.find((t) => t.id === state.activeTeamId);
     if (!team) return;
     team.status = 'EVALUATED';
@@ -1222,13 +1231,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Pitch Timekeeper actions
-  document.getElementById('btn-call-pitch').addEventListener('click', () => {
+  document.getElementById('btn-call-pitch')?.addEventListener('click', () => {
     const team = state.teams.find((t) => t.id === state.activeTeamId);
     document.getElementById('tk-visibility-badge').textContent = 'CALLED';
     showToast(`Called ${team ? team.name : 'team'} to pitch stage.`);
   });
 
-  document.getElementById('btn-launch-timer').addEventListener('click', (e) => {
+  document.getElementById('btn-launch-timer')?.addEventListener('click', (e) => {
     const readout = document.getElementById('tk-timer-readout');
     const vis = document.getElementById('tk-visibility-badge');
     if (state.timerInterval) {
@@ -1256,7 +1265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Deliverable link preview
-  document.getElementById('deliverables-grid').addEventListener('click', (e) => {
+  document.getElementById('deliverables-grid')?.addEventListener('click', (e) => {
     const link = e.target.closest('[data-deliverable]');
     if (link) {
       e.preventDefault();
@@ -1265,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Sign out
-  document.getElementById('btn-sign-out').addEventListener('click', async () => {
+  document.getElementById('btn-sign-out')?.addEventListener('click', async () => {
     await writeAuditLog('USER_LOGOUT', state.user?.username || 'unknown', 'Signed out');
     if (state.supabase && state.realtimeChannel) {
       state.supabase.removeChannel(state.realtimeChannel);
