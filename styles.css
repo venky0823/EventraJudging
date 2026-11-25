@@ -1355,9 +1355,19 @@ body {
 
 .admin-form-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1.2fr auto auto auto;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: var(--space-4);
   align-items: center;
+}
+
+.admin-form-grid .search-input,
+.admin-form-grid .round-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.admin-form-grid .btn-evaluate {
+  white-space: nowrap;
 }
 
 .table-wrap {
