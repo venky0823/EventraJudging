@@ -1,0 +1,106 @@
+/* ==========================================================================
+   EVENTRA | IVC PULSE (/judge) — Design System Tokens
+   Strictly derived from the extracted token specification.
+   ========================================================================== */
+
+:root {
+  /* Colors */
+  --bg-color: #050508;
+  --accent-primary-hover: #E0B010;
+  --accent-primary: #FBC815;
+  --accent-secondary: #FF007F;
+  --text-secondary: #A1A1AA;
+  --accent-tertiary: #00F0FF;
+  --color-4: #94A3B8;
+  --color-3: #EC4899;
+  --color-6: #10B981;
+  --color-10: #FFFFFF;
+
+  /* Derived surface & border opacities using only palette colors */
+  --surface-elevated: rgba(255, 255, 255, 0.04);
+  --surface-elevated-hover: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(148, 163, 184, 0.16);
+  --border-strong: rgba(148, 163, 184, 0.34);
+  --accent-primary-tint: rgba(251, 200, 21, 0.12);
+  --accent-secondary-tint: rgba(255, 0, 127, 0.14);
+  --accent-tertiary-tint: rgba(0, 240, 255, 0.12);
+  --color-6-tint: rgba(16, 185, 129, 0.14);
+  --color-3-tint: rgba(236, 72, 153, 0.14);
+
+  /* Typography */
+  --font-sans: 'Fredoka', system-ui, -apple-system, sans-serif;
+
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 16px;
+  --text-lg: 18px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-15: 15px;
+  --leading-16: 16px;
+  --leading-16-5: 16.5px;
+  --leading-17-6: 17.6px;
+  --leading-19-5: 19.5px;
+  --leading-22-5: 22.5px;
+  --leading-24: 24px;
+
+  /* Spacing (4px base unit) */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 12px;
+  --space-6: 14px;
+  --space-7: 16px;
+  --space-8: 20px;
+  --space-9: 24px;
+  --space-10: 32px;
+  --space-11: 40px;
+
+  /* Shapes (Pinned to 4px, 16px, 9999px) */
+  --radius-sm: 4px;
+  --radius-md: 16px;
+  --radius-full: 9999px;
+
+  /* Elevation */
+  --shadow-sm: rgba(224, 2, 110, 0.384) 0px 4.02895px 22.0869px 0px,
+    rgba(255, 255, 255, 0.255) 0px 1px 1.01448px 0px inset;
+
+  /* Motion */
+  --duration-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-ease-out: 0.3s cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes activePillPulse {
+  0%, 100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: var(--shadow-sm);
+  }
+}
