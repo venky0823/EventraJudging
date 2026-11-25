@@ -18,7 +18,32 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading-22-5);
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Aesthetic Neon-Dark Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) var(--bg-color);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--accent-secondary), var(--accent-tertiary));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
 }
 
 .skip-link {
