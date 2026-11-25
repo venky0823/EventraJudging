@@ -40,6 +40,7 @@ const state = {
   spocTeamSearch: '',
   spocTrackFilter: 'all',
   spocShowAllotted: true,
+  spocOpenDropdownTeamId: null,
   round: 'all',
   assignFilter: '',
   auditFilter: '',
@@ -762,18 +763,37 @@ function renderAdminViews() {
     .map((t, idx) => {
       const checked = state.spocSelectedTeams.has(t.id);
       const owner = teamToSpoc.get(t.id);
+      const showDropdown = checked || state.spocOpenDropdownTeamId === t.id;
+      const currentOwnerObj = allStaff.find((s) => s.teams.has(t.id));
+      const currentOwnerEmail = currentOwnerObj ? currentOwnerObj.email.toLowerCase() : '';
       return `
         <div class="spoc-team-tile ${checked ? 'is-checked' : ''}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${checked}" tabindex="0">
           <div class="spoc-tile-top">
             <span class="spoc-idx" style="color:var(--accent-primary);">#${idx + 1}</span>
             <span class="status-pill">${t.sem}</span>
-            <input type="checkbox" class="remember-check" ${checked ? 'checked' : ''} tabindex="-1" aria-hidden="true" />
+            <input type="checkbox" class="remember-check spoc-tile-checkbox" data-spoc-checkbox="${t.id}" ${showDropdown ? 'checked' : ''} aria-label="Assign SPOC for ${t.name}" />
           </div>
           <div class="spoc-tile-title">${t.name}</div>
           <div class="spoc-tile-meta">
             <span class="team-leader">${t.leader}</span>
             <span class="${owner ? 'spoc-taken' : 'spoc-avail'}">${owner ? `Allotted: ${owner}` : 'Available'}</span>
           </div>
+          ${showDropdown
+            ? `
+            <select class="round-select spoc-inline-select" data-spoc-assign-team="${t.id}" aria-label="Select SPOC for ${t.name}">
+              <option value="">Unassigned</option>
+              ${allStaff
+                .map(
+                  (st) => `
+                <option value="${st.email}" ${st.email.toLowerCase() === currentOwnerEmail ? 'selected' : ''}>
+                  ${st.name} (${st.email})
+                </option>
+              `
+                )
+                .join('')}
+            </select>
+          `
+            : ''}
         </div>
       `;
     })
@@ -1357,12 +1377,56 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('spoc-allot-teams-grid')?.addEventListener('click', (e) => {
+    if (e.target.closest('.spoc-inline-select')) return;
+    const cb = e.target.closest('[data-spoc-checkbox]');
     const tile = e.target.closest('[data-toggle-spoc-team]');
     if (!tile) return;
     const tid = tile.dataset.toggleSpocTeam;
-    if (state.spocSelectedTeams.has(tid)) state.spocSelectedTeams.delete(tid);
-    else state.spocSelectedTeams.add(tid);
+    if (cb) {
+      state.spocOpenDropdownTeamId = cb.checked ? tid : null;
+      if (cb.checked) state.spocSelectedTeams.add(tid);
+      else state.spocSelectedTeams.delete(tid);
+      renderAdminViews();
+      return;
+    }
+    if (state.spocSelectedTeams.has(tid)) {
+      state.spocSelectedTeams.delete(tid);
+      if (state.spocOpenDropdownTeamId === tid) state.spocOpenDropdownTeamId = null;
+    } else {
+      state.spocSelectedTeams.add(tid);
+      state.spocOpenDropdownTeamId = tid;
+    }
     renderAdminViews();
+  });
+
+  document.getElementById('spoc-allot-teams-grid')?.addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-spoc-assign-team]');
+    if (!sel || !isAdmin() || !state.supabase) return;
+    const teamId = sel.dataset.spocAssignTeam;
+    const targetEmail = sel.value.trim();
+
+    // Remove previous assignment for this team
+    await state.supabase.from('spocs').delete().eq('assigned_team_id', teamId);
+
+    if (targetEmail) {
+      const staff = state.spocs.find((s) => (s.email || '').toLowerCase() === targetEmail.toLowerCase());
+      if (staff) {
+        await state.supabase.from('spocs').insert({
+          name: staff.name,
+          email: staff.email,
+          phone: staff.phone,
+          department: staff.department,
+          assigned_team_id: teamId,
+          status: 'ACTIVE'
+        });
+        await writeAuditLog('SPOC_TEAM_ASSIGNED', teamId, `Assigned to ${staff.name}`);
+        showToast(`Assigned ${teamId} to ${staff.name}.`);
+      }
+    } else {
+      await writeAuditLog('SPOC_TEAM_UNASSIGNED', teamId, 'Cleared SPOC assignment');
+      showToast(`Unassigned SPOC from ${teamId}.`);
+    }
+    await syncFromSupabase();
   });
 
   document.getElementById('btn-spoc-select-filtered')?.addEventListener('click', () => {
