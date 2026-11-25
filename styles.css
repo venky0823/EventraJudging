@@ -316,13 +316,15 @@ body {
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--space-7);
   background-color: var(--bg-color);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: var(--space-7);
+  gap: var(--space-6);
 }
 
 .sidebar-top {
