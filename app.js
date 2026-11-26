@@ -584,9 +584,7 @@ function renderAdminViews() {
                 <td><span class="sem-label">${t.sem}</span></td>
                 <td>Round ${t.round}</td>
                 <td>
-                  ${spoc
-                    ? `<strong>${spoc.name}</strong><br><span class="team-leader">${spoc.department} · ${spoc.email}</span>`
-                    : `<span class="status-pill">UNASSIGNED</span>`}
+                  ${spoc ? `<strong>${spoc.name}</strong>` : `<span class="status-pill">UNASSIGNED</span>`}
                 </td>
                 <td>
                   <select class="round-select" data-assign-judge-select="${t.id}" aria-label="Select judge for ${t.name}">
@@ -609,6 +607,42 @@ function renderAdminViews() {
       </tbody>
     </table>
   `;
+
+  // 2b. SPOC Names Section in Judge Assignments
+  const spocOnlyWrap = document.getElementById('admin-assign-spoc-only-wrap');
+  if (spocOnlyWrap) {
+    const spocGroups = new Map();
+    state.spocs.forEach((s) => {
+      if (!spocGroups.has(s.name)) spocGroups.set(s.name, []);
+      if (s.assigned_team_id) {
+        const tObj = state.allTeams.find((t) => t.id === s.assigned_team_id);
+        if (tObj) spocGroups.get(s.name).push(tObj.name);
+      }
+    });
+    spocOnlyWrap.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>SPOC Name</th>
+            <th>Teams Managed</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Array.from(spocGroups.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(
+              ([spocName, teamNames]) => `
+              <tr>
+                <td><strong>${spocName}</strong></td>
+                <td>${teamNames.length > 0 ? teamNames.join(', ') : '<span class="status-pill">UNASSIGNED</span>'}</td>
+              </tr>
+            `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    `;
+  }
 
   // 3. Evaluation Matrix
   document.getElementById('admin-matrix-table-wrap').innerHTML = `
