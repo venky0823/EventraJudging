@@ -570,7 +570,8 @@ function renderAdminViews() {
       <tbody>
         ${filteredTeams
           .map((t) => {
-            const teamJudges = new Set(state.assignments.filter((a) => a.team_id === t.id).map((a) => a.judge_id));
+            const currentAssign = state.assignments.find((a) => a.team_id === t.id);
+            const assignedJudgeId = currentAssign ? currentAssign.judge_id : '';
             const spoc = state.spocs.find((s) => s.assigned_team_id === t.id);
             return `
               <tr>
@@ -583,24 +584,18 @@ function renderAdminViews() {
                     : `<span class="status-pill">UNASSIGNED</span>`}
                 </td>
                 <td>
-                  <div class="assign-pills">
+                  <select class="round-select" data-assign-judge-select="${t.id}" aria-label="Select judge for ${t.name}">
+                    <option value="">Unassigned</option>
                     ${state.judges
-                      .map((j) => {
-                        const assigned = teamJudges.has(j.username);
-                        return `
-                          <button
-                            type="button"
-                            class="assign-toggle ${assigned ? 'is-assigned' : ''}"
-                            data-assign-team="${t.id}"
-                            data-assign-judge="${j.username}"
-                            data-assigned="${assigned}"
-                          >
-                            ${assigned ? '✓ ' : '+ '}${j.display_name}
-                          </button>
-                        `;
-                      })
+                      .map(
+                        (j) => `
+                      <option value="${j.username}" ${j.username === assignedJudgeId ? 'selected' : ''}>
+                        ${j.display_name} (${j.username})
+                      </option>
+                    `
+                      )
                       .join('')}
-                  </div>
+                  </select>
                 </td>
               </tr>
             `;
@@ -1303,10 +1298,16 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdminViews();
   });
 
-  document.getElementById('admin-assign-table-wrap')?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-assign-team]');
-    if (btn) {
-      toggleAssignment(btn.dataset.assignTeam, btn.dataset.assignJudge, btn.dataset.assigned === 'true');
+  document.getElementById('admin-assign-table-wrap')?.addEventListener('change', (e) => {
+    const sel = e.target.closest('[data-assign-judge-select]');
+    if (!sel) return;
+    const teamId = sel.dataset.assignJudgeSelect;
+    const judgeId = sel.value;
+    if (!judgeId) {
+      const existing = state.assignments.find((a) => a.team_id === teamId);
+      if (existing) toggleAssignment(teamId, existing.judge_id, true);
+    } else {
+      toggleAssignment(teamId, judgeId, false);
     }
   });
 
