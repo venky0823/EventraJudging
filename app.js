@@ -299,7 +299,12 @@ async function syncFromSupabase() {
     }
     if (spocsRes && !spocsRes.error) state.spocs = spocsRes.data || [];
     if (spocUpdatesRes && !spocUpdatesRes.error) state.spocUpdates = spocUpdatesRes.data || [];
-    if (judgesRes && !judgesRes.error) state.judges = judgesRes.data || [];
+    if (judgesRes && !judgesRes.error) {
+      const spocNames = new Set(state.spocs.map((s) => (s.name || '').toLowerCase()));
+      state.judges = (judgesRes.data || []).filter(
+        (j) => !j.username.startsWith('spoc-') && !spocNames.has((j.display_name || '').toLowerCase())
+      );
+    }
     if (auditRes && !auditRes.error) state.auditLogs = auditRes.data || [];
     if (accountsRes && !accountsRes.error) state.allAccounts = accountsRes.data || [];
     if (settingsRes && !settingsRes.error && settingsRes.data) {
