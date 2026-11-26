@@ -561,6 +561,17 @@ function renderAdminViews() {
     );
   });
 
+  const uniqueSpocList = [];
+  const seenSpocNames = new Set();
+  state.spocs.forEach((s) => {
+    const key = (s.email || s.name).toLowerCase();
+    if (!seenSpocNames.has(key)) {
+      seenSpocNames.add(key);
+      uniqueSpocList.push(s);
+    }
+  });
+  uniqueSpocList.sort((a, b) => a.name.localeCompare(b.name));
+
   document.getElementById('admin-assign-table-wrap').innerHTML = `
     <table class="admin-table">
       <thead>
@@ -568,7 +579,7 @@ function renderAdminViews() {
           <th>Team</th>
           <th>Semester</th>
           <th>Round</th>
-          <th>SPOC Managing</th>
+          <th>SPOC Incharge</th>
           <th>Assigned Judge (Max 1 per Team)</th>
         </tr>
       </thead>
@@ -578,13 +589,25 @@ function renderAdminViews() {
             const currentAssign = state.assignments.find((a) => a.team_id === t.id);
             const assignedJudgeId = currentAssign ? currentAssign.judge_id : '';
             const spoc = state.spocs.find((s) => s.assigned_team_id === t.id);
+            const currentSpocEmail = spoc ? (spoc.email || '').toLowerCase() : '';
             return `
               <tr>
                 <td><strong>${t.name}</strong><br><span class="team-leader">${t.leader}</span></td>
                 <td><span class="sem-label">${t.sem}</span></td>
                 <td>Round ${t.round}</td>
                 <td>
-                  ${spoc ? `<strong>${spoc.name}</strong>` : `<span class="status-pill">UNASSIGNED</span>`}
+                  <select class="round-select" data-assign-spoc-select="${t.id}" aria-label="Select SPOC incharge for ${t.name}">
+                    <option value="">Unassigned</option>
+                    ${uniqueSpocList
+                      .map(
+                        (sp) => `
+                      <option value="${sp.email}" ${(sp.email || '').toLowerCase() === currentSpocEmail ? 'selected' : ''}>
+                        ${sp.name}
+                      </option>
+                    `
+                      )
+                      .join('')}
+                  </select>
                 </td>
                 <td>
                   <select class="round-select" data-assign-judge-select="${t.id}" aria-label="Select judge for ${t.name}">
@@ -1337,16 +1360,45 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdminViews();
   });
 
-  document.getElementById('admin-assign-table-wrap')?.addEventListener('change', (e) => {
-    const sel = e.target.closest('[data-assign-judge-select]');
-    if (!sel) return;
-    const teamId = sel.dataset.assignJudgeSelect;
-    const judgeId = sel.value;
-    if (!judgeId) {
-      const existing = state.assignments.find((a) => a.team_id === teamId);
-      if (existing) toggleAssignment(teamId, existing.judge_id, true);
-    } else {
-      toggleAssignment(teamId, judgeId, false);
+  document.getElementById('admin-assign-table-wrap')?.addEventListener('change', async (e) => {
+    const judgeSel = e.target.closest('[data-assign-judge-select]');
+    if (judgeSel) {
+      const teamId = judgeSel.dataset.assignJudgeSelect;
+      const judgeId = judgeSel.value;
+      if (!judgeId) {
+        const existing = state.assignments.find((a) => a.team_id === teamId);
+        if (existing) toggleAssignment(teamId, existing.judge_id, true);
+      } else {
+        toggleAssignment(teamId, judgeId, false);
+      }
+      return;
+    }
+
+    const spocSel = e.target.closest('[data-assign-spoc-select]');
+    if (spocSel && isAdmin() && state.supabase) {
+      const teamId = spocSel.dataset.assignSpocSelect;
+      const targetEmail = spocSel.value.trim();
+
+      await state.supabase.from('spocs').delete().eq('assigned_team_id', teamId);
+      if (targetEmail) {
+        const staff = state.spocs.find((s) => (s.email || '').toLowerCase() === targetEmail.toLowerCase());
+        if (staff) {
+          await state.supabase.from('spocs').insert({
+            name: staff.name,
+            email: staff.email,
+            phone: staff.phone,
+            department: staff.department,
+            assigned_team_id: teamId,
+            status: 'ACTIVE'
+          });
+          await writeAuditLog('SPOC_INCHARGE_CHANGED', teamId, `SPOC -> ${staff.name}`);
+          showToast(`Updated ${teamId} SPOC incharge to ${staff.name}.`);
+        }
+      } else {
+        await writeAuditLog('SPOC_INCHARGE_CLEARED', teamId, 'Removed SPOC incharge');
+        showToast(`Cleared SPOC incharge for ${teamId}.`);
+      }
+      await syncFromSupabase();
     }
   });
 
