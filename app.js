@@ -545,9 +545,16 @@ function renderAdminViews() {
   document.getElementById('admin-kpi-unassigned').textContent = String(unassignedCount);
 
   const q = state.assignFilter.trim().toLowerCase();
-  const filteredTeams = state.allTeams.filter(
-    (t) => t.name.toLowerCase().includes(q) || t.leader.toLowerCase().includes(q) || t.sem.toLowerCase().includes(q)
-  );
+  const filteredTeams = state.allTeams.filter((t) => {
+    const spoc = state.spocs.find((s) => s.assigned_team_id === t.id);
+    const spocName = spoc ? spoc.name.toLowerCase() : '';
+    return (
+      t.name.toLowerCase().includes(q) ||
+      t.leader.toLowerCase().includes(q) ||
+      t.sem.toLowerCase().includes(q) ||
+      spocName.includes(q)
+    );
+  });
 
   document.getElementById('admin-assign-table-wrap').innerHTML = `
     <table class="admin-table">
@@ -556,6 +563,7 @@ function renderAdminViews() {
           <th>Team</th>
           <th>Semester</th>
           <th>Round</th>
+          <th>SPOC Managing</th>
           <th>Assigned Judge (Max 1 per Team)</th>
         </tr>
       </thead>
@@ -563,11 +571,17 @@ function renderAdminViews() {
         ${filteredTeams
           .map((t) => {
             const teamJudges = new Set(state.assignments.filter((a) => a.team_id === t.id).map((a) => a.judge_id));
+            const spoc = state.spocs.find((s) => s.assigned_team_id === t.id);
             return `
               <tr>
                 <td><strong>${t.name}</strong><br><span class="team-leader">${t.leader}</span></td>
                 <td><span class="sem-label">${t.sem}</span></td>
                 <td>Round ${t.round}</td>
+                <td>
+                  ${spoc
+                    ? `<strong>${spoc.name}</strong><br><span class="team-leader">${spoc.department} · ${spoc.email}</span>`
+                    : `<span class="status-pill">UNASSIGNED</span>`}
+                </td>
                 <td>
                   <div class="assign-pills">
                     ${state.judges
