@@ -1614,6 +1614,84 @@ document.addEventListener('DOMContentLoaded', () => {
     await syncFromSupabase();
   });
 
+  // Admin: Import SPOCs from Excel (.xlsx / .xls / .csv)
+  document.getElementById('btn-import-spoc-excel')?.addEventListener('click', () => {
+    document.getElementById('spoc-excel-input')?.click();
+  });
+
+  document.getElementById('spoc-excel-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !isAdmin() || !state.supabase) return;
+    if (!window.XLSX) {
+      showToast('Excel parser still loading — try again in a moment.');
+      return;
+    }
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = window.XLSX.read(buffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rawRows = window.XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+      const pickCol = (row, candidates) => {
+        const keys = Object.keys(row);
+        for (const cand of candidates) {
+          const found = keys.find((k) => k.trim().toLowerCase() === cand);
+          if (found && String(row[found]).trim() !== '') return String(row[found]).trim();
+        }
+        return '';
+      };
+
+      const spocRows = [];
+      for (const r of rawRows) {
+        const name = pickCol(r, ['spoc name', 'name', 'spoc', 'full name', 'staff name']);
+        const email = pickCol(r, ['email', 'spoc email', 'mail', 'email id']);
+        const phone = pickCol(r, ['phone', 'mobile', 'contact', 'phone number']);
+        const department = pickCol(r, ['department', 'dept', 'branch']) || 'CSE';
+        const teamVal = pickCol(r, ['team name', 'team', 'assigned team', 'team_id']);
+
+        if (!name && !email) continue;
+        const finalName = (name || email.split('@')[0]).toUpperCase();
+        const finalEmail = (email || `${finalName.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@ivc.pulse`).toLowerCase();
+
+        let assignedTeamId = null;
+        if (teamVal) {
+          const matched = state.allTeams.find(
+            (t) => t.name.toLowerCase() === teamVal.toLowerCase() || t.id.toLowerCase() === teamVal.toLowerCase()
+          );
+          if (matched) assignedTeamId = matched.id;
+        }
+
+        spocRows.push({
+          name: finalName,
+          email: finalEmail,
+          phone: phone || null,
+          department,
+          assigned_team_id: assignedTeamId,
+          status: 'ACTIVE'
+        });
+      }
+
+      if (spocRows.length === 0) {
+        showToast('No valid SPOC rows found in Excel (needs Name / Email columns).');
+        e.target.value = '';
+        return;
+      }
+
+      const { error } = await state.supabase.from('spocs').insert(spocRows);
+      if (error) throw error;
+
+      await writeAuditLog('SPOC_EXCEL_IMPORTED', file.name, `Imported ${spocRows.length} SPOC record(s)`);
+      showToast(`Imported ${spocRows.length} SPOC record(s) into Supabase!`);
+      await syncFromSupabase();
+    } catch (err) {
+      console.error('Excel import error:', err);
+      showToast('Failed to import Excel file.');
+    } finally {
+      e.target.value = '';
+    }
+  });
+
   document.getElementById('btn-spoc-autobalance')?.addEventListener('click', async () => {
     if (!isAdmin() || !state.supabase) return;
     const uniqueStaff = [];

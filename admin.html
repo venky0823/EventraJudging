@@ -478,6 +478,8 @@
                 </div>
                 <div class="spoc-top-btns">
                   <button type="button" class="btn-tk btn-tk-cyan" id="btn-spoc-autobalance">AUTO-BALANCE</button>
+                  <button type="button" class="btn-draft" id="btn-import-spoc-excel">IMPORT EXCEL</button>
+                  <input type="file" id="spoc-excel-input" accept=".xlsx,.xls,.csv" hidden />
                   <button type="button" class="btn-signin-mini" id="btn-spoc-save-all">+ ASSIGN SPOC</button>
                 </div>
               </div>
@@ -576,7 +578,8 @@
   <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=26" defer></script>
+  <script src="./app.js?v=27" defer></script>
 </body>
 </html>
