@@ -714,6 +714,14 @@ function renderAdminViews() {
 
   const allStaff = Array.from(staffMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   const assignedStaffCount = allStaff.filter((s) => s.teams.size > 0).length;
+  const allocatedTeamsCount = new Set(state.spocs.map((s) => s.assigned_team_id).filter(Boolean)).size;
+
+  document.getElementById('spoc-kpi-total-staff').textContent = String(allStaff.length);
+  document.getElementById('spoc-kpi-eligible').textContent = String(allStaff.length);
+  document.getElementById('spoc-kpi-assigned').textContent = String(assignedStaffCount);
+  document.getElementById('spoc-kpi-unassigned').textContent = String(allStaff.length - assignedStaffCount);
+  document.getElementById('spoc-kpi-allocated').textContent = String(allocatedTeamsCount);
+
   document.getElementById('spoc-total-count').textContent = String(allStaff.length);
   document.getElementById('spoc-summary-sub').textContent = `${assignedStaffCount} assigned · ${allStaff.length - assignedStaffCount} unassigned`;
 
@@ -787,13 +795,13 @@ function renderAdminViews() {
         <div class="spoc-team-tile ${isAssigned ? 'is-checked' : ''}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${isAssigned}" tabindex="0">
           <div class="spoc-tile-top">
             <span class="spoc-idx" style="color:var(--accent-primary);">#${idx + 1}</span>
-            <span class="status-pill">${t.sem}</span>
+            <span class="spoc-code-pill">IVC-${String(101 + idx)}</span>
+            <div class="spoc-tile-title" style="flex:1;min-width:0;">${t.name}</div>
             <input type="checkbox" class="remember-check spoc-tile-checkbox" data-spoc-checkbox="${t.id}" ${isAssigned ? 'checked' : ''} aria-label="Assign SPOC for ${t.name}" />
           </div>
-          <div class="spoc-tile-title">${t.name}</div>
           <div class="spoc-tile-meta">
-            <span class="team-leader">${t.leader}</span>
-            <span class="${owner ? 'spoc-taken' : 'spoc-avail'}">${owner ? `Allotted: ${owner}` : 'Available'}</span>
+            <span class="sem-label">[${t.sem}]</span>
+            <span class="${owner ? 'spoc-taken' : 'spoc-avail'}">${owner ? `Allotted: ${owner}` : 'Available for Allotment'}</span>
           </div>
           ${showDropdown
             ? `
@@ -1441,7 +1449,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-spoc-clear-selected')?.addEventListener('click', () => {
     state.spocSelectedTeams.clear();
+    state.spocOpenDropdownTeamId = null;
     renderAdminViews();
+  });
+
+  document.getElementById('btn-spoc-delete-all')?.addEventListener('click', async () => {
+    if (!isAdmin() || !state.supabase) return;
+    const uniqueStaff = [];
+    const seen = new Set();
+    state.spocs.forEach((s) => {
+      const k = (s.email || '').toLowerCase();
+      if (!seen.has(k)) {
+        seen.add(k);
+        uniqueStaff.push(s);
+      }
+    });
+    await state.supabase.from('spocs').delete().neq('email', '');
+    if (uniqueStaff.length > 0) {
+      await state.supabase.from('spocs').insert(
+        uniqueStaff.map((st) => ({
+          name: st.name,
+          email: st.email,
+          phone: st.phone,
+          department: st.department,
+          assigned_team_id: null,
+          status: 'ACTIVE'
+        }))
+      );
+    }
+    state.spocSelectedTeams.clear();
+    state.spocOpenDropdownTeamId = null;
+    await writeAuditLog('SPOC_ALLOTMENTS_CLEARED', 'All Staff SPOCs', 'Cleared all team allotments');
+    showToast('Cleared all SPOC team allotments.');
+    await syncFromSupabase();
   });
 
   document.getElementById('btn-spoc-save-all')?.addEventListener('click', async () => {
