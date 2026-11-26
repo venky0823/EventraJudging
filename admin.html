@@ -371,6 +371,10 @@
 
           <div class="admin-toolbar">
             <input type="search" id="admin-assign-search" class="search-input" placeholder="Filter teams by name, leader, or sem..." aria-label="Filter assignment table" />
+            <div class="spoc-top-btns">
+              <button type="button" class="btn-draft" id="btn-import-judge-excel">IMPORT JUDGES EXCEL</button>
+              <input type="file" id="judge-excel-input" accept=".xlsx,.xls,.csv" hidden />
+            </div>
           </div>
 
           <div class="admin-table-card">
@@ -580,6 +584,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=27" defer></script>
+  <script src="./app.js?v=28" defer></script>
 </body>
 </html>

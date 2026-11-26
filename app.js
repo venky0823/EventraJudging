@@ -1614,6 +1614,87 @@ document.addEventListener('DOMContentLoaded', () => {
     await syncFromSupabase();
   });
 
+  // Admin: Import Judges from Excel (.xlsx / .xls / .csv)
+  document.getElementById('btn-import-judge-excel')?.addEventListener('click', () => {
+    document.getElementById('judge-excel-input')?.click();
+  });
+
+  document.getElementById('judge-excel-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !isAdmin() || !state.supabase) return;
+    if (!window.XLSX) {
+      showToast('Excel parser still loading — try again in a moment.');
+      return;
+    }
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = window.XLSX.read(buffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rawRows = window.XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+      const pickCol = (row, candidates) => {
+        const keys = Object.keys(row);
+        for (const cand of candidates) {
+          const found = keys.find((k) => k.trim().toLowerCase() === cand);
+          if (found && String(row[found]).trim() !== '') return String(row[found]).trim();
+        }
+        return '';
+      };
+
+      let importedCount = 0;
+      for (const r of rawRows) {
+        const name = pickCol(r, ['judge name', 'name', 'judge', 'full name', 'display name']);
+        const email = pickCol(r, ['email', 'judge email', 'mail', 'email id']);
+        const usernameRaw = pickCol(r, ['username', 'user', 'id', 'judge id']);
+        const password = pickCol(r, ['password', 'pass']) || 'Judge@2026';
+        const teamVal = pickCol(r, ['team name', 'team', 'assigned team', 'team_id']);
+
+        if (!name && !email && !usernameRaw) continue;
+        const displayName = name || usernameRaw || email.split('@')[0];
+        const username = (usernameRaw || displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')).toLowerCase();
+        const finalEmail = (email || `${username}@ivc.pulse`).toLowerCase();
+
+        const { error: accErr } = await state.supabase.rpc('create_portal_account', {
+          p_email: finalEmail,
+          p_username: username,
+          p_password: password,
+          p_role: 'judge',
+          p_display_name: displayName
+        });
+
+        if (!accErr) importedCount += 1;
+
+        if (teamVal) {
+          const matched = state.allTeams.find(
+            (t) => t.name.toLowerCase() === teamVal.toLowerCase() || t.id.toLowerCase() === teamVal.toLowerCase()
+          );
+          if (matched) {
+            await state.supabase.from('judge_assignments').delete().eq('team_id', matched.id);
+            await state.supabase.from('judge_assignments').insert({
+              team_id: matched.id,
+              judge_id: username,
+              assigned_by: state.user.username
+            });
+          }
+        }
+      }
+
+      if (importedCount === 0) {
+        showToast('No new judge accounts imported (check columns or duplicates).');
+      } else {
+        await writeAuditLog('JUDGE_EXCEL_IMPORTED', file.name, `Imported ${importedCount} judge account(s)`);
+        showToast(`Imported ${importedCount} judge(s) into Supabase!`);
+      }
+      await syncFromSupabase();
+    } catch (err) {
+      console.error('Judge Excel import error:', err);
+      showToast('Failed to import Judges Excel file.');
+    } finally {
+      e.target.value = '';
+    }
+  });
+
   // Admin: Import SPOCs from Excel (.xlsx / .xls / .csv)
   document.getElementById('btn-import-spoc-excel')?.addEventListener('click', () => {
     document.getElementById('spoc-excel-input')?.click();
