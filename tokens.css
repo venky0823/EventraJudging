@@ -17,6 +17,16 @@
   --color-6-muted: #97A6BA;
   --color-3: #EC4899;
   --color-10: #FFFFFF;
+  --ann-purple: #A855F7;
+  --ann-purple-soft: #C084FC;
+  --ann-blue: #3B82F6;
+  --ann-blue-soft: #60A5FA;
+  --ann-green: #22C55E;
+  --ann-green-soft: #4ADE80;
+  --ann-pink: #DB2777;
+  --ann-border: #374151;
+  --ann-bg-dark: #1F2937;
+  --ann-text-light: #D1D5DB;
 
   /* Derived surface & border opacities using only palette colors */
   --surface-elevated: rgba(255, 255, 255, 0.04);
@@ -63,8 +73,10 @@
   --space-10: 32px;
   --space-11: 40px;
 
-  /* Shapes (Pinned to 4px, 16px, 9999px) */
+  /* Shapes (Pinned to 4px, 8px, 12px, 16px, 9999px) */
   --radius-sm: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
   --radius-md: 16px;
   --radius-full: 9999px;
 

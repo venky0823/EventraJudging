@@ -115,6 +115,13 @@
           </svg>
           <span>Content Releases</span>
         </a>
+        <a href="#admin-announcements" class="nav-item" data-view="admin-announcements">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span>Announcements</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -669,6 +676,74 @@
           <div id="cr-cards-grid" class="cr-cards-grid"></div>
         </section>
       </div>
+
+      <!-- View: Admin Announcements (/admin/announcements) -->
+      <div id="view-admin-announcements" class="view-panel" hidden>
+        <section class="admin-panel" aria-labelledby="admin-ann-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/ANNOUNCEMENTS</div>
+            <h1 id="admin-ann-title" class="rubrics-title">ANNOUNCEMENTS</h1>
+            <p class="rubrics-sub">Broadcast live notices to Judge, SPOC, and Team portals in real time.</p>
+          </div>
+
+          <section class="kpi-strip" aria-label="Announcement telemetry">
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading">TOTAL BROADCASTS</span></div>
+              <div class="kpi-number kpi-num-white" id="ann-kpi-total">0</div>
+              <div class="kpi-caption">Recorded Notices</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">ACTIVE LIVE</span></div>
+              <div class="kpi-number kpi-num-green" id="ann-kpi-active">0</div>
+              <div class="kpi-caption">Showing on Portals</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">URGENT ALERTS</span></div>
+              <div class="kpi-number kpi-num-pink" id="ann-kpi-urgent">0</div>
+              <div class="kpi-caption">High Priority</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">ARCHIVED</span></div>
+              <div class="kpi-number kpi-num-cyan" id="ann-kpi-archived">0</div>
+              <div class="kpi-caption">Hidden from Feed</div>
+            </article>
+          </section>
+
+          <form id="admin-add-ann-form" class="ann-compose-card">
+            <div class="ann-compose-grid">
+              <input type="text" id="ann-title" class="search-input" placeholder="Announcement Title" required />
+              <select id="ann-audience" class="round-select" aria-label="Target audience">
+                <option value="ALL">ALL PORTALS</option>
+                <option value="JUDGES">JUDGES ONLY</option>
+                <option value="SPOCS">SPOCS ONLY</option>
+                <option value="TEAMS">TEAMS</option>
+              </select>
+              <select id="ann-priority" class="round-select" aria-label="Priority">
+                <option value="INFO">INFO</option>
+                <option value="IMPORTANT">IMPORTANT</option>
+                <option value="URGENT">URGENT</option>
+              </select>
+            </div>
+            <div class="ann-compose-bottom">
+              <input type="text" id="ann-message" class="search-input" style="min-width:0;flex:1;" placeholder="Broadcast message shown on target portal banners..." required />
+              <button type="submit" class="btn-signin-mini">BROADCAST ANNOUNCEMENT →</button>
+            </div>
+          </form>
+
+          <div class="admin-toolbar">
+            <input type="search" id="ann-search" class="search-input" placeholder="Search announcements..." aria-label="Search announcements" />
+            <select id="ann-audience-filter" class="round-select" aria-label="Filter announcements by audience">
+              <option value="all">ALL AUDIENCES</option>
+              <option value="ALL">ALL PORTALS</option>
+              <option value="JUDGES">JUDGES</option>
+              <option value="SPOCS">SPOCS</option>
+              <option value="TEAMS">TEAMS</option>
+            </select>
+          </div>
+
+          <div id="ann-feed-list" class="ann-feed-list"></div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -745,6 +820,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=30" defer></script>
+  <script src="./app.js?v=31" defer></script>
 </body>
 </html>

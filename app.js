@@ -48,6 +48,9 @@ const state = {
   crSearch: '',
   crTypeFilter: 'all',
   activeActivityId: null,
+  announcements: [],
+  annSearch: '',
+  annAudienceFilter: 'all',
   round: 'all',
   assignFilter: '',
   auditFilter: '',
@@ -113,6 +116,7 @@ function showView(viewId) {
     'view-admin-audit',
     'view-admin-users',
     'view-admin-content',
+    'view-admin-announcements',
     'view-spoc-teams',
     'view-spoc-readiness'
   ].forEach((id) => {
@@ -190,6 +194,7 @@ function setupRealtimeSync() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'spoc_updates' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'content_activities' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => syncFromSupabase())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_logs' }, () => {
       if (isAdmin()) syncFromSupabase();
@@ -270,7 +275,8 @@ async function syncFromSupabase() {
         ? state.supabase.from('evaluations').select('*')
         : state.supabase.from('evaluations').select('*').eq('judge_id', state.judgeId),
       state.supabase.from('evaluation_rounds').select('*').order('id', { ascending: true }),
-      state.supabase.from('rubric_criteria').select('*').order('sort_order', { ascending: true })
+      state.supabase.from('rubric_criteria').select('*').order('sort_order', { ascending: true }),
+      state.supabase.from('announcements').select('*').order('created_at', { ascending: false })
     ];
 
     if (isAdmin() || state.user?.role === 'spoc') {
@@ -288,7 +294,7 @@ async function syncFromSupabase() {
     }
 
     const results = await Promise.all(queries);
-    const [teamsRes, assignRes, evalsRes, roundsRes, critRes, spocsRes, spocUpdatesRes, judgesRes, auditRes, accountsRes, settingsRes, crActRes, crItemsRes] = results;
+    const [teamsRes, assignRes, evalsRes, roundsRes, critRes, annRes, spocsRes, spocUpdatesRes, judgesRes, auditRes, accountsRes, settingsRes, crActRes, crItemsRes] = results;
 
     if (teamsRes.error) throw teamsRes.error;
     if (assignRes.error) throw assignRes.error;
@@ -310,6 +316,7 @@ async function syncFromSupabase() {
         max: Number(c.max_score)
       }));
     }
+    if (annRes && !annRes.error) state.announcements = annRes.data || [];
     if (spocsRes && !spocsRes.error) state.spocs = spocsRes.data || [];
     if (spocUpdatesRes && !spocUpdatesRes.error) state.spocUpdates = spocUpdatesRes.data || [];
     if (judgesRes && !judgesRes.error) {
@@ -1005,6 +1012,59 @@ function renderAdminViews() {
       renderCrWorkspaceTable();
     }
   }
+
+  // 9. Announcements (/admin/announcements)
+  const annFeed = document.getElementById('ann-feed-list');
+  if (annFeed) {
+    const activeAnns = state.announcements.filter((a) => a.is_active);
+    const urgentAnns = state.announcements.filter((a) => a.priority === 'URGENT' && a.is_active);
+    const archivedAnns = state.announcements.filter((a) => !a.is_active);
+
+    document.getElementById('ann-kpi-total').textContent = String(state.announcements.length);
+    document.getElementById('ann-kpi-active').textContent = String(activeAnns.length);
+    document.getElementById('ann-kpi-urgent').textContent = String(urgentAnns.length);
+    document.getElementById('ann-kpi-archived').textContent = String(archivedAnns.length);
+
+    const aq = state.annSearch.trim().toLowerCase();
+    const filteredAnns = state.announcements.filter((a) => {
+      const matchText =
+        a.title.toLowerCase().includes(aq) ||
+        a.message.toLowerCase().includes(aq);
+      const matchAud = state.annAudienceFilter === 'all' || a.audience === state.annAudienceFilter;
+      return matchText && matchAud;
+    });
+
+    if (filteredAnns.length === 0) {
+      annFeed.innerHTML = `<div class="rubrics-empty-card"><p class="rubrics-empty-text">No announcements match your filter.</p></div>`;
+    } else {
+      annFeed.innerHTML = filteredAnns
+        .map((a) => {
+          const priorityCls = a.priority === 'URGENT' ? 'ann-pill-pink' : a.priority === 'IMPORTANT' ? 'ann-pill-purple' : 'ann-pill-blue';
+          const cardCls = a.priority === 'URGENT' ? 'is-urgent' : a.priority === 'IMPORTANT' ? 'is-important' : '';
+          return `
+            <article class="ann-item-card ${cardCls}">
+              <div style="flex:1;min-width:240px;">
+                <div class="ann-item-meta">
+                  <span class="status-pill ${priorityCls}">${a.priority}</span>
+                  <span class="status-pill ann-pill-blue">${a.audience}</span>
+                  <span class="status-pill ${a.is_active ? 'ann-pill-green' : ''}">${a.is_active ? 'ACTIVE LIVE' : 'ARCHIVED'}</span>
+                  <span class="team-leader">${new Date(a.created_at).toLocaleString()}</span>
+                </div>
+                <h3 class="ann-item-title">${a.title}</h3>
+                <p class="ann-item-msg">${a.message}</p>
+              </div>
+              <div class="assign-pills">
+                <button type="button" class="btn-draft" data-ann-toggle="${a.id}" data-ann-active="${a.is_active}">
+                  ${a.is_active ? 'Archive' : 'Activate'}
+                </button>
+                <button type="button" class="btn-danger-ghost" data-ann-delete="${a.id}">DELETE</button>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+    }
+  }
 }
 
 function renderCrWorkspaceTable() {
@@ -1329,11 +1389,29 @@ function renderSpocViews() {
   `;
 }
 
+function renderPortalBroadcastBanner() {
+  const el = document.getElementById('portal-broadcast-msg');
+  if (!el || !state.user) return;
+  const targetAud = state.user.role === 'judge' ? 'JUDGES' : state.user.role === 'spoc' ? 'SPOCS' : 'ALL';
+  const active = state.announcements.find(
+    (a) => a.is_active && (a.audience === 'ALL' || a.audience === targetAud)
+  );
+  if (active) {
+    el.textContent = `[${active.priority}] ${active.title}: ${active.message}`;
+  } else {
+    el.textContent =
+      state.user.role === 'spoc'
+        ? 'Verify team check-ins and presentation decks before round start.'
+        : 'No active announcements for this portal. All systems operational.';
+  }
+}
+
 function renderAll() {
   renderKpis();
   renderTeamsGrid();
   renderAdminViews();
   renderSpocViews();
+  renderPortalBroadcastBanner();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2311,6 +2389,65 @@ document.addEventListener('DOMContentLoaded', () => {
     if (link) {
       e.preventDefault();
       showToast(`Opening ${link.dataset.deliverable}...`);
+    }
+  });
+
+  // Admin: Announcements (/admin/announcements)
+  document.getElementById('ann-search')?.addEventListener('input', (e) => {
+    state.annSearch = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('ann-audience-filter')?.addEventListener('change', (e) => {
+    state.annAudienceFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('admin-add-ann-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isAdmin() || !state.supabase) return;
+    const title = document.getElementById('ann-title').value.trim();
+    const message = document.getElementById('ann-message').value.trim();
+    const audience = document.getElementById('ann-audience').value;
+    const priority = document.getElementById('ann-priority').value;
+
+    const { error } = await state.supabase.from('announcements').insert({
+      title,
+      message,
+      audience,
+      priority,
+      is_active: true,
+      created_by: state.user.username
+    });
+    if (error) {
+      showToast('Failed to publish announcement.');
+      return;
+    }
+    await writeAuditLog('ANNOUNCEMENT_PUBLISHED', title, `Audience: ${audience}, Priority: ${priority}`);
+    e.target.reset();
+    showToast(`Broadcasted "${title}" to ${audience}!`);
+    await syncFromSupabase();
+  });
+
+  document.getElementById('ann-feed-list')?.addEventListener('click', async (e) => {
+    if (!isAdmin() || !state.supabase) return;
+    const toggleBtn = e.target.closest('[data-ann-toggle]');
+    if (toggleBtn) {
+      const id = toggleBtn.dataset.annToggle;
+      const next = toggleBtn.dataset.annActive !== 'true';
+      await state.supabase.from('announcements').update({ is_active: next }).eq('id', id);
+      await writeAuditLog('ANNOUNCEMENT_STATUS', id, next ? 'Activated' : 'Archived');
+      showToast(next ? 'Announcement activated.' : 'Announcement archived.');
+      await syncFromSupabase();
+      return;
+    }
+    const delBtn = e.target.closest('[data-ann-delete]');
+    if (delBtn) {
+      const id = delBtn.dataset.annDelete;
+      await state.supabase.from('announcements').delete().eq('id', id);
+      await writeAuditLog('ANNOUNCEMENT_DELETED', id, 'Deleted announcement');
+      showToast('Deleted announcement.');
+      await syncFromSupabase();
     }
   });
 

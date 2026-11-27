@@ -2156,6 +2156,113 @@ select option,
   }
 }
 
+/* Announcements Portal (/admin/announcements) */
+.ann-compose-card {
+  padding: var(--space-7);
+  border-radius: var(--radius-12);
+  background-color: var(--surface-color);
+  border: 1px solid var(--ann-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ann-compose-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.ann-compose-grid .search-input,
+.ann-compose-grid .round-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.ann-compose-bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.ann-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ann-item-card {
+  padding: var(--space-6) var(--space-7);
+  border-radius: var(--radius-12);
+  background-color: var(--surface-color);
+  border: 1px solid var(--ann-border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.ann-item-card.is-urgent {
+  border-color: var(--accent-secondary);
+}
+
+.ann-item-card.is-important {
+  border-color: var(--accent-primary);
+}
+
+.ann-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+
+.ann-pill-purple {
+  background-color: var(--ann-bg-dark);
+  border: 1px solid var(--ann-purple);
+  color: var(--ann-purple-soft);
+}
+
+.ann-pill-blue {
+  background-color: var(--ann-bg-dark);
+  border: 1px solid var(--ann-blue);
+  color: var(--ann-blue-soft);
+}
+
+.ann-pill-green {
+  background-color: var(--ann-bg-dark);
+  border: 1px solid var(--ann-green);
+  color: var(--ann-green-soft);
+}
+
+.ann-pill-pink {
+  background-color: var(--accent-secondary-tint);
+  border: 1px solid var(--ann-pink);
+  color: var(--accent-secondary);
+}
+
+.ann-item-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-10);
+}
+
+.ann-item-msg {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--ann-text-light);
+}
+
+@media (max-width: 780px) {
+  .ann-compose-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Toast */
 .toast-region {
   position: fixed;
