@@ -106,6 +106,15 @@
           </svg>
           <span>User Management</span>
         </a>
+        <a href="#admin-content" class="nav-item" data-view="admin-content">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <path d="M12 18v-6" />
+            <path d="m9 15 3-3 3 3" />
+          </svg>
+          <span>Content Releases</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -598,6 +607,68 @@
           </div>
         </section>
       </div>
+
+      <!-- View: Admin Content Releases (/admin/content-releases) -->
+      <div id="view-admin-content" class="view-panel" hidden>
+        <section class="admin-panel" aria-labelledby="admin-content-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/CONTENT-RELEASES</div>
+            <h1 id="admin-content-title" class="rubrics-title">CONTENT RELEASES</h1>
+            <p class="rubrics-sub">Publish problem statements, certificate releases, announcements, and submission workspaces.</p>
+          </div>
+
+          <section class="kpi-strip" aria-label="Content release telemetry">
+            <article class="kpi-card">
+              <div class="kpi-card-top">
+                <span class="kpi-heading">ACTIVITIES</span>
+                <span class="kpi-icon-box kpi-icon-pink" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF007F" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                </span>
+              </div>
+              <div class="kpi-number kpi-num-pink" id="cr-kpi-activities">0</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top">
+                <span class="kpi-heading">CONTENT ITEMS</span>
+                <span class="kpi-icon-box kpi-icon-cyan" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                </span>
+              </div>
+              <div class="kpi-number kpi-num-cyan" id="cr-kpi-items">0</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top">
+                <span class="kpi-heading">PUBLISHED</span>
+                <span class="kpi-icon-box kpi-icon-green" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
+                </span>
+              </div>
+              <div class="kpi-number kpi-num-green" id="cr-kpi-published">0</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top">
+                <span class="kpi-heading">DRAFTS</span>
+                <span class="kpi-icon-box kpi-icon-gold" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FBC815" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                </span>
+              </div>
+              <div class="kpi-number kpi-num-gold" id="cr-kpi-drafts">0</div>
+            </article>
+          </section>
+
+          <div class="cr-toolbar">
+            <input type="search" id="cr-search" class="search-input" style="min-width:0;flex:1;" placeholder="Search activities and content..." aria-label="Search activities and content" />
+            <select id="cr-type-filter" class="round-select" aria-label="Filter activity types">
+              <option value="all">ALL ACTIVITY TYPES</option>
+              <option value="BUILT-IN">BUILT-IN</option>
+              <option value="CUSTOM">CUSTOM</option>
+            </select>
+            <button type="button" class="btn-signin-mini" id="btn-cr-create-activity">+ CREATE ACTIVITY</button>
+          </div>
+
+          <div id="cr-cards-grid" class="cr-cards-grid"></div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -624,11 +695,56 @@
     </div>
   </div>
 
+  <!-- Content Release Workspace Modal -->
+  <div id="cr-workspace-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="cr-ws-title">
+    <div class="modal-panel roster-modal-panel">
+      <div class="modal-header">
+        <div>
+          <div class="rubrics-kicker" id="cr-ws-kicker">CONTENT WORKSPACE</div>
+          <h2 id="cr-ws-title" class="modal-title">ACTIVITY</h2>
+        </div>
+        <button type="button" class="btn-icon" id="btn-close-cr-ws" aria-label="Close workspace">✕</button>
+      </div>
+
+      <form id="cr-add-item-form" class="admin-form-grid" style="grid-template-columns: minmax(0,1fr) minmax(0,1.4fr) auto auto;">
+        <input type="text" id="cr-item-title" class="search-input" placeholder="Item Title" required />
+        <input type="text" id="cr-item-body" class="search-input" placeholder="Content brief / URL / Notice" required />
+        <select id="cr-item-status" class="round-select" aria-label="Publish status">
+          <option value="PUBLISHED">PUBLISHED</option>
+          <option value="DRAFT">DRAFT</option>
+        </select>
+        <button type="submit" class="btn-evaluate">ADD ITEM →</button>
+      </form>
+
+      <div class="table-wrap" id="cr-ws-table"></div>
+    </div>
+  </div>
+
+  <!-- Create Activity Modal -->
+  <div id="cr-create-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="cr-create-title">
+    <div class="modal-panel roster-modal-panel" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <div class="rubrics-kicker">NEW CONTENT STREAM</div>
+          <h2 id="cr-create-title" class="modal-title">CREATE ACTIVITY</h2>
+        </div>
+        <button type="button" class="btn-icon" id="btn-close-cr-create" aria-label="Close create activity dialog">✕</button>
+      </div>
+
+      <form id="cr-create-form" class="login-form">
+        <input type="text" id="cr-new-title" class="search-input" style="min-width:0;width:100%;" placeholder="Activity Title (e.g. MENTOR HOURS)" required />
+        <input type="text" id="cr-new-kicker" class="search-input" style="min-width:0;width:100%;" placeholder="Category Kicker (e.g. SCHEDULE)" required />
+        <input type="text" id="cr-new-desc" class="search-input" style="min-width:0;width:100%;" placeholder="Short description..." required />
+        <button type="submit" class="btn-signin">CREATE ACTIVITY →</button>
+      </form>
+    </div>
+  </div>
+
   <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=29" defer></script>
+  <script src="./app.js?v=30" defer></script>
 </body>
 </html>

@@ -43,6 +43,11 @@ const state = {
   spocOpenDropdownTeamId: null,
   umSearch: '',
   umRoleFilter: 'all',
+  contentActivities: [],
+  contentItems: [],
+  crSearch: '',
+  crTypeFilter: 'all',
+  activeActivityId: null,
   round: 'all',
   assignFilter: '',
   auditFilter: '',
@@ -107,6 +112,7 @@ function showView(viewId) {
     'view-admin-spocs',
     'view-admin-audit',
     'view-admin-users',
+    'view-admin-content',
     'view-spoc-teams',
     'view-spoc-readiness'
   ].forEach((id) => {
@@ -182,6 +188,8 @@ function setupRealtimeSync() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'rubric_criteria' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'spocs' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'spoc_updates' }, () => syncFromSupabase())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'content_activities' }, () => syncFromSupabase())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings' }, () => syncFromSupabase())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_logs' }, () => {
       if (isAdmin()) syncFromSupabase();
@@ -275,10 +283,12 @@ async function syncFromSupabase() {
       queries.push(state.supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50));
       queries.push(state.supabase.rpc('list_all_accounts'));
       queries.push(state.supabase.from('event_settings').select('*').eq('key', 'results_engine').maybeSingle());
+      queries.push(state.supabase.from('content_activities').select('*').order('created_at', { ascending: true }));
+      queries.push(state.supabase.from('content_items').select('*').order('created_at', { ascending: false }));
     }
 
     const results = await Promise.all(queries);
-    const [teamsRes, assignRes, evalsRes, roundsRes, critRes, spocsRes, spocUpdatesRes, judgesRes, auditRes, accountsRes, settingsRes] = results;
+    const [teamsRes, assignRes, evalsRes, roundsRes, critRes, spocsRes, spocUpdatesRes, judgesRes, auditRes, accountsRes, settingsRes, crActRes, crItemsRes] = results;
 
     if (teamsRes.error) throw teamsRes.error;
     if (assignRes.error) throw assignRes.error;
@@ -310,6 +320,8 @@ async function syncFromSupabase() {
     if (settingsRes && !settingsRes.error && settingsRes.data) {
       state.resultsEngine = settingsRes.data.value;
     }
+    if (crActRes && !crActRes.error) state.contentActivities = crActRes.data || [];
+    if (crItemsRes && !crItemsRes.error) state.contentItems = crItemsRes.data || [];
 
     const assignedIds = new Set(
       state.assignments.filter((a) => a.judge_id === state.judgeId).map((a) => a.team_id)
@@ -939,6 +951,108 @@ function renderAdminViews() {
       </table>
     `;
   }
+
+  // 8. Content Releases
+  const crGrid = document.getElementById('cr-cards-grid');
+  if (crGrid) {
+    const publishedItems = state.contentItems.filter((i) => i.status === 'PUBLISHED');
+    const draftItems = state.contentItems.filter((i) => i.status === 'DRAFT');
+
+    document.getElementById('cr-kpi-activities').textContent = String(state.contentActivities.length);
+    document.getElementById('cr-kpi-items').textContent = String(state.contentItems.length);
+    document.getElementById('cr-kpi-published').textContent = String(publishedItems.length);
+    document.getElementById('cr-kpi-drafts').textContent = String(draftItems.length);
+
+    const cq = state.crSearch.trim().toLowerCase();
+    const filteredActs = state.contentActivities.filter((a) => {
+      const matchText =
+        a.title.toLowerCase().includes(cq) ||
+        a.kicker.toLowerCase().includes(cq) ||
+        a.description.toLowerCase().includes(cq);
+      const matchType = state.crTypeFilter === 'all' || a.activity_type === state.crTypeFilter;
+      return matchText && matchType;
+    });
+
+    crGrid.innerHTML = filteredActs
+      .map((act) => {
+        const actItems = state.contentItems.filter((i) => i.activity_id === act.id);
+        const pubCount = actItems.filter((i) => i.status === 'PUBLISHED').length;
+        return `
+          <article class="cr-card">
+            <div class="cr-card-top">
+              <span class="kpi-icon-box kpi-icon-${act.accent === 'gold' ? 'gold' : act.accent === 'cyan' ? 'cyan' : 'pink'}" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+              </span>
+              <span class="status-pill">${act.activity_type}</span>
+            </div>
+            <div class="cr-kicker">${act.kicker}</div>
+            <h2 class="cr-title">${act.title}</h2>
+            <p class="cr-desc">${act.description}</p>
+            <div class="cr-pills">
+              <span class="status-pill">${actItems.length} ITEM${actItems.length === 1 ? '' : 'S'}</span>
+              <span class="status-pill ${pubCount > 0 ? 'is-evaluated' : ''}">${pubCount > 0 ? `${pubCount} PUBLISHED` : 'NO PUBLISHED CONTENT'}</span>
+            </div>
+            <button type="button" class="btn-open-ws" data-open-cr-ws="${act.id}">
+              <span>OPEN WORKSPACE</span>
+              <span>→</span>
+            </button>
+          </article>
+        `;
+      })
+      .join('');
+
+    if (state.activeActivityId && !document.getElementById('cr-workspace-modal').hidden) {
+      renderCrWorkspaceTable();
+    }
+  }
+}
+
+function renderCrWorkspaceTable() {
+  const act = state.contentActivities.find((a) => a.id === state.activeActivityId);
+  if (!act) return;
+  document.getElementById('cr-ws-kicker').textContent = `CONTENT WORKSPACE // ${act.kicker}`;
+  document.getElementById('cr-ws-title').textContent = act.title;
+
+  const items = state.contentItems.filter((i) => i.activity_id === act.id);
+  const wrap = document.getElementById('cr-ws-table');
+  if (items.length === 0) {
+    wrap.innerHTML = `<div class="rubrics-empty-card"><p class="rubrics-empty-text">No content items yet. Add one above.</p></div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Content / Details</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items
+          .map(
+            (item) => `
+          <tr>
+            <td><strong>${item.title}</strong></td>
+            <td class="team-leader">${item.body}</td>
+            <td><span class="status-pill ${item.status === 'PUBLISHED' ? 'is-evaluated' : 'is-drafted'}">${item.status}</span></td>
+            <td>
+              <div class="assign-pills">
+                <button type="button" class="btn-draft" data-cr-toggle-item="${item.id}" data-cr-item-status="${item.status}">
+                  ${item.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
+                </button>
+                <button type="button" class="btn-danger-ghost" data-cr-delete-item="${item.id}">REMOVE</button>
+              </div>
+            </td>
+          </tr>
+        `
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
 }
 
 async function refreshTeamFromSupabase(teamId) {
@@ -1939,6 +2053,109 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!error) {
       await writeAuditLog('USER_DELETED', id, 'Removed from User Management');
       showToast('Removed user account.');
+      await syncFromSupabase();
+    }
+  });
+
+  // Admin: Content Releases
+  document.getElementById('cr-search')?.addEventListener('input', (e) => {
+    state.crSearch = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('cr-type-filter')?.addEventListener('change', (e) => {
+    state.crTypeFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('btn-cr-create-activity')?.addEventListener('click', () => {
+    document.getElementById('cr-create-modal').hidden = false;
+  });
+
+  document.getElementById('btn-close-cr-create')?.addEventListener('click', () => {
+    document.getElementById('cr-create-modal').hidden = true;
+  });
+
+  document.getElementById('cr-create-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isAdmin() || !state.supabase) return;
+    const title = document.getElementById('cr-new-title').value.trim().toUpperCase();
+    const kicker = document.getElementById('cr-new-kicker').value.trim().toUpperCase();
+    const description = document.getElementById('cr-new-desc').value.trim();
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const { error } = await state.supabase.from('content_activities').insert({
+      id,
+      title,
+      kicker,
+      description,
+      activity_type: 'CUSTOM',
+      accent: 'cyan'
+    });
+    if (error) {
+      showToast('Could not create activity.');
+      return;
+    }
+    await writeAuditLog('CONTENT_ACTIVITY_CREATED', title, kicker);
+    e.target.reset();
+    document.getElementById('cr-create-modal').hidden = true;
+    showToast(`Created activity ${title}.`);
+    await syncFromSupabase();
+  });
+
+  document.getElementById('cr-cards-grid')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-open-cr-ws]');
+    if (!btn) return;
+    state.activeActivityId = btn.dataset.openCrWs;
+    renderCrWorkspaceTable();
+    document.getElementById('cr-workspace-modal').hidden = false;
+  });
+
+  document.getElementById('btn-close-cr-ws')?.addEventListener('click', () => {
+    document.getElementById('cr-workspace-modal').hidden = true;
+    state.activeActivityId = null;
+  });
+
+  document.getElementById('cr-add-item-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isAdmin() || !state.supabase || !state.activeActivityId) return;
+    const title = document.getElementById('cr-item-title').value.trim();
+    const body = document.getElementById('cr-item-body').value.trim();
+    const status = document.getElementById('cr-item-status').value;
+    const { error } = await state.supabase.from('content_items').insert({
+      activity_id: state.activeActivityId,
+      title,
+      body,
+      status,
+      created_by: state.user.username
+    });
+    if (error) {
+      showToast('Failed to add content item.');
+      return;
+    }
+    await writeAuditLog('CONTENT_ITEM_ADDED', title, `Activity: ${state.activeActivityId} (${status})`);
+    e.target.reset();
+    showToast(`Added "${title}".`);
+    await syncFromSupabase();
+  });
+
+  document.getElementById('cr-ws-table')?.addEventListener('click', async (e) => {
+    if (!isAdmin() || !state.supabase) return;
+    const toggleBtn = e.target.closest('[data-cr-toggle-item]');
+    if (toggleBtn) {
+      const id = toggleBtn.dataset.crToggleItem;
+      const next = toggleBtn.dataset.crItemStatus === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+      await state.supabase.from('content_items').update({ status: next }).eq('id', id);
+      await writeAuditLog('CONTENT_ITEM_STATUS', id, `Status -> ${next}`);
+      showToast(`Item marked ${next}.`);
+      await syncFromSupabase();
+      return;
+    }
+    const delBtn = e.target.closest('[data-cr-delete-item]');
+    if (delBtn) {
+      const id = delBtn.dataset.crDeleteItem;
+      await state.supabase.from('content_items').delete().eq('id', id);
+      await writeAuditLog('CONTENT_ITEM_REMOVED', id, 'Deleted content item');
+      showToast('Removed content item.');
       await syncFromSupabase();
     }
   });
