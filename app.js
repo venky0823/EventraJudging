@@ -132,6 +132,38 @@ function showView(viewId) {
   });
 }
 
+const VIEW_URLS = {
+  'admin-overview': './admin.html',
+  'admin-assignments': './admin-assignments.html',
+  'admin-matrix': './admin-evaluation.html',
+  'admin-rounds': './admin-rounds.html',
+  'admin-spocs': './admin-spocs.html',
+  'admin-audit': './admin-audit.html',
+  'admin-users': './admin-users.html',
+  'admin-content': './admin-content-releases.html',
+  'admin-announcements': './admin-announcements.html',
+  'admin-results': './admin-results.html',
+  teams: './judge.html',
+  rubrics: './judge-rubrics.html',
+  evaluate: './judge-evaluate.html',
+  'spoc-teams': './spoc.html',
+  'spoc-readiness': './spoc-readiness.html'
+};
+
+function navigateToView(viewName, query = '') {
+  const targetId = viewName.startsWith('view-') ? viewName : `view-${viewName}`;
+  const rawName = viewName.replace(/^view-/, '');
+  if (document.getElementById(targetId)) {
+    setActiveNav(rawName);
+    showView(rawName);
+    return;
+  }
+  const dest = VIEW_URLS[rawName];
+  if (dest) {
+    window.location.href = `${dest}${query}`;
+  }
+}
+
 function roleHomePage(role) {
   if (role === 'admin') return './admin.html';
   if (role === 'spoc') return './spoc.html';
@@ -176,7 +208,12 @@ function applyAuthUI() {
   }
 
   const defaultView =
-    page === 'admin' ? 'admin-overview' : page === 'spoc' ? 'spoc-teams' : 'teams';
+    document.body.dataset.section ||
+    (page === 'admin' ? 'admin-overview' : page === 'spoc' ? 'spoc-teams' : 'teams');
+  if (defaultView === 'evaluate') {
+    const qTeam = new URLSearchParams(window.location.search).get('team');
+    if (qTeam) state.activeTeamId = qTeam;
+  }
   setActiveNav(defaultView);
   showView(defaultView);
 
@@ -366,8 +403,14 @@ async function syncFromSupabase() {
     saveLocalTeams();
     renderAll();
 
-    if (state.activeTeamId && !document.getElementById('view-evaluate').hidden) {
-      openTeamEvaluation(state.activeTeamId);
+    const evalView = document.getElementById('view-evaluate');
+    if (evalView && !evalView.hidden) {
+      if (!state.activeTeamId && state.teams.length > 0) {
+        state.activeTeamId = state.teams[0].id;
+      }
+      if (state.activeTeamId) {
+        openTeamEvaluation(state.activeTeamId);
+      }
     }
 
     setSyncStatus(state.realtimeChannel ? 'Realtime Live' : 'Supabase Connected');
@@ -478,7 +521,7 @@ function getVisibleTeams() {
 }
 
 function renderKpis() {
-  if (document.body.dataset.page !== 'judge') return;
+  if (document.body.dataset.page !== 'judge' || !document.getElementById('kpi-total')) return;
   const visible = getVisibleTeams();
   document.getElementById('kpi-total').textContent = String(visible.length);
   document.getElementById('kpi-evaluated').textContent = String(visible.filter((t) => t.status === 'EVALUATED').length);
@@ -489,6 +532,7 @@ function renderKpis() {
 function renderTeamsGrid() {
   if (document.body.dataset.page !== 'judge') return;
   const grid = document.getElementById('teams-grid');
+  if (!grid) return;
   const visible = getVisibleTeams();
   const maxTotal = maxPossibleScore();
 
@@ -539,41 +583,44 @@ function renderAdminViews() {
   const activeSpocs = state.spocs.filter((s) => s.status === 'ACTIVE').length;
 
   // 1. Overview (Roster Cards + Event Operations Metrics)
-  const counts = {
-    participant: state.allAccounts.filter((a) => a.role === 'participant').length,
-    team_leader: state.allAccounts.filter((a) => a.role === 'team_leader' || a.role === 'team').length,
-    judge: state.allAccounts.filter((a) => a.role === 'judge').length,
-    staff: state.allAccounts.filter((a) => a.role === 'staff').length
-  };
-  document.getElementById('roster-count-participant').textContent = String(counts.participant);
-  document.getElementById('roster-count-team_leader').textContent = String(counts.team_leader);
-  document.getElementById('roster-count-judge').textContent = String(counts.judge);
-  document.getElementById('roster-count-staff').textContent = String(counts.staff);
+  if (document.getElementById('roster-count-participant')) {
+    const counts = {
+      participant: state.allAccounts.filter((a) => a.role === 'participant').length,
+      team_leader: state.allAccounts.filter((a) => a.role === 'team_leader' || a.role === 'team').length,
+      judge: state.allAccounts.filter((a) => a.role === 'judge').length,
+      staff: state.allAccounts.filter((a) => a.role === 'staff').length
+    };
+    document.getElementById('roster-count-participant').textContent = String(counts.participant);
+    document.getElementById('roster-count-team_leader').textContent = String(counts.team_leader);
+    document.getElementById('roster-count-judge').textContent = String(counts.judge);
+    document.getElementById('roster-count-staff').textContent = String(counts.staff);
 
-  const activeRoundsCount = state.rounds.filter((r) => r.status === 'ACTIVE').length;
-  const evaluatedIds = new Set(state.allEvaluations.filter((e) => e.status === 'EVALUATED').map((e) => e.team_id));
-  const pendingEvalsCount = Math.max(0, state.allTeams.length - evaluatedIds.size);
+    const activeRoundsCount = state.rounds.filter((r) => r.status === 'ACTIVE').length;
+    const evaluatedIds = new Set(state.allEvaluations.filter((e) => e.status === 'EVALUATED').map((e) => e.team_id));
+    const pendingEvalsCount = Math.max(0, state.allTeams.length - evaluatedIds.size);
 
-  document.getElementById('ops-registered-teams').textContent = String(state.allTeams.length);
-  document.getElementById('ops-active-rounds').textContent = String(activeRoundsCount);
-  document.getElementById('ops-pending-evals').textContent = String(pendingEvalsCount);
+    document.getElementById('ops-registered-teams').textContent = String(state.allTeams.length);
+    document.getElementById('ops-active-rounds').textContent = String(activeRoundsCount);
+    document.getElementById('ops-pending-evals').textContent = String(pendingEvalsCount);
 
-  const engineEl = document.getElementById('ops-results-engine');
-  engineEl.textContent = state.resultsEngine;
-  engineEl.classList.toggle('is-live', state.resultsEngine === 'Published / Live');
+    const engineEl = document.getElementById('ops-results-engine');
+    engineEl.textContent = state.resultsEngine;
+    engineEl.classList.toggle('is-live', state.resultsEngine === 'Published / Live');
 
-  if (state.inspectRole && !document.getElementById('roster-modal').hidden) {
-    renderRosterModalTable();
+    if (state.inspectRole && !document.getElementById('roster-modal')?.hidden) {
+      renderRosterModalTable();
+    }
   }
 
   // 2. Judge Assignments
-  const assignedTeamIds = new Set(state.assignments.map((a) => a.team_id));
-  const unassignedCount = state.allTeams.filter((t) => !assignedTeamIds.has(t.id)).length;
+  if (document.getElementById('admin-assign-table-wrap')) {
+    const assignedTeamIds = new Set(state.assignments.map((a) => a.team_id));
+    const unassignedCount = state.allTeams.filter((t) => !assignedTeamIds.has(t.id)).length;
 
-  document.getElementById('admin-kpi-teams').textContent = String(state.allTeams.length);
-  document.getElementById('admin-kpi-judges').textContent = String(state.judges.length);
-  document.getElementById('admin-kpi-pairs').textContent = String(state.assignments.length);
-  document.getElementById('admin-kpi-unassigned').textContent = String(unassignedCount);
+    document.getElementById('admin-kpi-teams').textContent = String(state.allTeams.length);
+    document.getElementById('admin-kpi-judges').textContent = String(state.judges.length);
+    document.getElementById('admin-kpi-pairs').textContent = String(state.assignments.length);
+    document.getElementById('admin-kpi-unassigned').textContent = String(unassignedCount);
 
   const q = state.assignFilter.trim().toLowerCase();
   const filteredTeams = state.allTeams.filter((t) => {
@@ -656,9 +703,11 @@ function renderAdminViews() {
       </tbody>
     </table>
   `;
+  }
 
   // 3. Evaluation Matrix (/admin/evaluation)
-  const evalBallots = state.allEvaluations.filter((e) => e.status === 'EVALUATED').length;
+  if (document.getElementById('admin-matrix-table-wrap')) {
+    const evalBallots = state.allEvaluations.filter((e) => e.status === 'EVALUATED').length;
   const draftBallots = state.allEvaluations.filter((e) => e.status === 'DRAFTED').length;
   const evaluatedTeamSet = new Set(state.allEvaluations.filter((e) => e.status === 'EVALUATED').map((e) => e.team_id));
   const pendingTeamsCount = Math.max(0, state.allTeams.length - evaluatedTeamSet.size);
@@ -733,9 +782,11 @@ function renderAdminViews() {
       </tbody>
     </table>
   `;
+  }
 
   // 4. Rounds & Criteria
-  document.getElementById('admin-rounds-list').innerHTML = state.rounds
+  if (document.getElementById('admin-rounds-list') && document.getElementById('admin-criteria-table-wrap')) {
+    document.getElementById('admin-rounds-list').innerHTML = state.rounds
     .map(
       (r) => `
       <div class="round-row">
@@ -782,9 +833,11 @@ function renderAdminViews() {
       </tbody>
     </table>
   `;
+  }
 
   // 5. Staff SPOC Allotment Console
-  const staffMap = new Map();
+  if (document.getElementById('spoc-staff-list') && document.getElementById('spoc-allot-teams-grid')) {
+    const staffMap = new Map();
   state.spocs.forEach((s) => {
     const key = (s.email || s.name).toLowerCase();
     if (!staffMap.has(key)) {
@@ -910,9 +963,11 @@ function renderAdminViews() {
       `;
     })
     .join('');
+  }
 
   // 6. Audit Logs
-  const aq = state.auditFilter.trim().toLowerCase();
+  if (document.getElementById('admin-audit-table-wrap')) {
+    const aq = state.auditFilter.trim().toLowerCase();
   const filteredLogs = state.auditLogs.filter(
     (l) =>
       l.actor.toLowerCase().includes(aq) ||
@@ -949,6 +1004,7 @@ function renderAdminViews() {
       </tbody>
     </table>
   `;
+  }
 
   // 7. User Management
   const umWrap = document.getElementById('admin-users-table-wrap');
@@ -1264,7 +1320,8 @@ async function refreshTeamFromSupabase(teamId) {
     saveLocalTeams();
     renderAll();
 
-    if (state.activeTeamId === teamId && !document.getElementById('view-evaluate').hidden) {
+    const evalEl = document.getElementById('view-evaluate');
+    if (state.activeTeamId === teamId && evalEl && !evalEl.hidden) {
       document.getElementById('eval-cumulative-score').textContent = `${totalScore(team.scores)} / ${maxPossibleScore()} PTS`;
       state.criteria.forEach((c) => {
         const val = Number(team.scores?.[c.id]) || 0;
@@ -1444,78 +1501,84 @@ function renderSpocViews() {
   const deckCount = myTeams.filter((t) => updateMap.get(t.id)?.deck_verified).length;
   const readyCount = myTeams.filter((t) => updateMap.get(t.id)?.pitch_ready).length;
 
-  document.getElementById('spoc-kpi-total').textContent = String(myTeams.length);
-  document.getElementById('spoc-kpi-checked').textContent = String(checkedCount);
-  document.getElementById('spoc-kpi-deck').textContent = String(deckCount);
-  document.getElementById('spoc-kpi-ready').textContent = String(readyCount);
+  const spocGrid = document.getElementById('spoc-teams-grid');
+  if (spocGrid) {
+    document.getElementById('spoc-kpi-total').textContent = String(myTeams.length);
+    document.getElementById('spoc-kpi-checked').textContent = String(checkedCount);
+    document.getElementById('spoc-kpi-deck').textContent = String(deckCount);
+    document.getElementById('spoc-kpi-ready').textContent = String(readyCount);
 
-  document.getElementById('spoc-teams-grid').innerHTML = myTeams
-    .map((t) => {
-      const up = updateMap.get(t.id) || { checked_in: false, deck_verified: false, pitch_ready: false, spoc_notes: '' };
-      const assignedJudge = state.assignments.find((a) => a.team_id === t.id)?.judge_id || 'Unassigned';
-      return `
-        <article class="team-card">
-          <div class="team-card-header">
-            <span class="sem-label">${t.sem}</span>
-            <span class="status-pill ${up.pitch_ready ? 'is-evaluated' : up.checked_in ? 'is-drafted' : ''}">
-              ${up.pitch_ready ? 'PITCH READY' : up.checked_in ? 'CHECKED IN' : 'AWAITING'}
-            </span>
-          </div>
-          <h2 class="team-title">${t.name}</h2>
-          <div class="team-leader">Leader: ${t.leader} · Judge: ${assignedJudge}</div>
-          <div class="team-divider" aria-hidden="true"></div>
-          <div class="assign-pills">
-            <button type="button" class="assign-toggle ${up.checked_in ? 'is-assigned' : ''}" data-spoc-toggle="checked_in" data-team-id="${t.id}" data-val="${up.checked_in}">
-              ${up.checked_in ? '✓ ' : '+ '}Checked In
-            </button>
-            <button type="button" class="assign-toggle ${up.deck_verified ? 'is-assigned' : ''}" data-spoc-toggle="deck_verified" data-team-id="${t.id}" data-val="${up.deck_verified}">
-              ${up.deck_verified ? '✓ ' : '+ '}Deck OK
-            </button>
-            <button type="button" class="assign-toggle ${up.pitch_ready ? 'is-assigned' : ''}" data-spoc-toggle="pitch_ready" data-team-id="${t.id}" data-val="${up.pitch_ready}">
-              ${up.pitch_ready ? '✓ ' : '+ '}Pitch Ready
-            </button>
-          </div>
-          <div class="team-card-footer" style="margin-top: var(--space-2);">
-            <input type="text" class="search-input" style="min-width:0;flex:1;" placeholder="SPOC note..." value="${up.spoc_notes || ''}" data-spoc-note-input="${t.id}" />
-            <button type="button" class="btn-draft" data-spoc-save-note="${t.id}">SAVE</button>
-          </div>
-        </article>
-      `;
-    })
-    .join('');
+    spocGrid.innerHTML = myTeams
+      .map((t) => {
+        const up = updateMap.get(t.id) || { checked_in: false, deck_verified: false, pitch_ready: false, spoc_notes: '' };
+        const assignedJudge = state.assignments.find((a) => a.team_id === t.id)?.judge_id || 'Unassigned';
+        return `
+          <article class="team-card">
+            <div class="team-card-header">
+              <span class="sem-label">${t.sem}</span>
+              <span class="status-pill ${up.pitch_ready ? 'is-evaluated' : up.checked_in ? 'is-drafted' : ''}">
+                ${up.pitch_ready ? 'PITCH READY' : up.checked_in ? 'CHECKED IN' : 'AWAITING'}
+              </span>
+            </div>
+            <h2 class="team-title">${t.name}</h2>
+            <div class="team-leader">Leader: ${t.leader} · Judge: ${assignedJudge}</div>
+            <div class="team-divider" aria-hidden="true"></div>
+            <div class="assign-pills">
+              <button type="button" class="assign-toggle ${up.checked_in ? 'is-assigned' : ''}" data-spoc-toggle="checked_in" data-team-id="${t.id}" data-val="${up.checked_in}">
+                ${up.checked_in ? '✓ ' : '+ '}Checked In
+              </button>
+              <button type="button" class="assign-toggle ${up.deck_verified ? 'is-assigned' : ''}" data-spoc-toggle="deck_verified" data-team-id="${t.id}" data-val="${up.deck_verified}">
+                ${up.deck_verified ? '✓ ' : '+ '}Deck OK
+              </button>
+              <button type="button" class="assign-toggle ${up.pitch_ready ? 'is-assigned' : ''}" data-spoc-toggle="pitch_ready" data-team-id="${t.id}" data-val="${up.pitch_ready}">
+                ${up.pitch_ready ? '✓ ' : '+ '}Pitch Ready
+              </button>
+            </div>
+            <div class="team-card-footer" style="margin-top: var(--space-2);">
+              <input type="text" class="search-input" style="min-width:0;flex:1;" placeholder="SPOC note..." value="${up.spoc_notes || ''}" data-spoc-note-input="${t.id}" />
+              <button type="button" class="btn-draft" data-spoc-save-note="${t.id}">SAVE</button>
+            </div>
+          </article>
+        `;
+      })
+      .join('');
+  }
 
-  document.getElementById('spoc-readiness-table-wrap').innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Assigned Judge</th>
-          <th>Checked In</th>
-          <th>Deck Verified</th>
-          <th>Pitch Ready</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${myTeams
-          .map((t) => {
-            const up = updateMap.get(t.id) || { checked_in: false, deck_verified: false, pitch_ready: false, spoc_notes: '' };
-            const assignedJudge = state.assignments.find((a) => a.team_id === t.id)?.judge_id || 'Unassigned';
-            return `
-              <tr>
-                <td><strong>${t.name}</strong><br><span class="team-leader">${t.sem} · ${t.leader}</span></td>
-                <td>${assignedJudge}</td>
-                <td><span class="status-pill ${up.checked_in ? 'is-evaluated' : ''}">${up.checked_in ? 'YES' : 'NO'}</span></td>
-                <td><span class="status-pill ${up.deck_verified ? 'is-evaluated' : ''}">${up.deck_verified ? 'YES' : 'NO'}</span></td>
-                <td><span class="status-pill ${up.pitch_ready ? 'is-evaluated' : ''}">${up.pitch_ready ? 'READY' : 'WAIT'}</span></td>
-                <td class="team-leader">${up.spoc_notes || '—'}</td>
-              </tr>
-            `;
-          })
-          .join('')}
-      </tbody>
-    </table>
-  `;
+  const spocReadinessWrap = document.getElementById('spoc-readiness-table-wrap');
+  if (spocReadinessWrap) {
+    spocReadinessWrap.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Assigned Judge</th>
+            <th>Checked In</th>
+            <th>Deck Verified</th>
+            <th>Pitch Ready</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${myTeams
+            .map((t) => {
+              const up = updateMap.get(t.id) || { checked_in: false, deck_verified: false, pitch_ready: false, spoc_notes: '' };
+              const assignedJudge = state.assignments.find((a) => a.team_id === t.id)?.judge_id || 'Unassigned';
+              return `
+                <tr>
+                  <td><strong>${t.name}</strong><br><span class="team-leader">${t.sem} · ${t.leader}</span></td>
+                  <td>${assignedJudge}</td>
+                  <td><span class="status-pill ${up.checked_in ? 'is-evaluated' : ''}">${up.checked_in ? 'YES' : 'NO'}</span></td>
+                  <td><span class="status-pill ${up.deck_verified ? 'is-evaluated' : ''}">${up.deck_verified ? 'YES' : 'NO'}</span></td>
+                  <td><span class="status-pill ${up.pitch_ready ? 'is-evaluated' : ''}">${up.pitch_ready ? 'READY' : 'WAIT'}</span></td>
+                  <td class="team-leader">${up.spoc_notes || '—'}</td>
+                </tr>
+              `;
+            })
+            .join('')}
+        </tbody>
+      </table>
+    `;
+  }
 }
 
 function renderPortalBroadcastBanner() {
@@ -1548,6 +1611,9 @@ document.addEventListener('DOMContentLoaded', () => {
   applyAuthUI();
   if (document.body.dataset.page !== 'login') {
     renderAll();
+    if (state.activeTeamId && document.getElementById('view-evaluate') && !document.getElementById('view-evaluate').hidden) {
+      openTeamEvaluation(state.activeTeamId);
+    }
   }
 
   // Password visibility toggle
@@ -1606,11 +1672,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sidebar Navigation
   document.querySelectorAll('.nav-item').forEach((item) => {
     item.addEventListener('click', (e) => {
-      e.preventDefault();
       const view = item.dataset.view;
-      if (view.startsWith('admin-') && !isAdmin()) return;
-      setActiveNav(view);
-      showView(view);
+      if (view.startsWith('admin-') && !isAdmin()) {
+        e.preventDefault();
+        showToast('Admin privileges required.');
+        return;
+      }
+      if (document.getElementById(`view-${view}`)) {
+        e.preventDefault();
+        setActiveNav(view);
+        showView(view);
+      }
     });
   });
 
@@ -1623,8 +1695,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const btn = e.target.closest('[data-nav-jump]');
     if (btn && isAdmin()) {
-      setActiveNav(btn.dataset.navJump);
-      showView(btn.dataset.navJump);
+      navigateToView(btn.dataset.navJump);
       return;
     }
     if (e.target.id === 'btn-toggle-results-engine' && isAdmin() && state.supabase) {
@@ -2376,13 +2447,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Open Team Evaluation page
   document.getElementById('teams-grid')?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-team-id]');
-    if (btn) openTeamEvaluation(btn.dataset.teamId);
+    if (!btn) return;
+    if (document.getElementById('view-evaluate')) {
+      openTeamEvaluation(btn.dataset.teamId);
+    } else {
+      navigateToView('evaluate', `?team=${encodeURIComponent(btn.dataset.teamId)}`);
+    }
   });
 
   // Back to Assigned Teams
   document.getElementById('btn-back-teams')?.addEventListener('click', () => {
-    showView('teams');
-    setActiveNav('teams');
+    navigateToView('teams');
   });
 
   // Slider live updates
@@ -2415,9 +2490,13 @@ document.addEventListener('DOMContentLoaded', () => {
     team.status = 'EVALUATED';
     await upsertEvaluationToSupabase(team);
     renderAll();
-    showView('teams');
-    setActiveNav('teams');
     showToast(`Submitted evaluation for ${team.name}.`);
+    if (document.getElementById('view-teams')) {
+      showView('teams');
+      setActiveNav('teams');
+    } else {
+      setTimeout(() => navigateToView('teams'), 450);
+    }
   });
 
   // Pitch Timekeeper actions

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EVENTRA | IVC PULSE — Admin Portal</title>
+  <title>EVENTRA | IVC PULSE — Admin Overview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./tokens.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body data-page="admin">
+<body data-page="admin" data-section="admin-overview">
   <a class="skip-link" href="#main-content">Skip to admin workspace</a>
 
   <div class="app-shell" id="app-shell">
@@ -48,7 +48,7 @@
 
       <nav class="sidebar-nav" aria-label="Admin navigation">
         <div class="nav-section-label">ADMINISTRATION</div>
-        <a href="#admin-overview" class="nav-item is-active" data-view="admin-overview" aria-current="page">
+        <a href="./admin.html" class="nav-item is-active" data-view="admin-overview" aria-current="page">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="7" height="9" />
             <rect x="14" y="3" width="7" height="5" />
@@ -57,7 +57,7 @@
           </svg>
           <span>Overview</span>
         </a>
-        <a href="#admin-assignments" class="nav-item" data-view="admin-assignments">
+        <a href="./admin-assignments.html" class="nav-item" data-view="admin-assignments">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -65,7 +65,7 @@
           </svg>
           <span>Judge Assignments</span>
         </a>
-        <a href="#admin-matrix" class="nav-item" data-view="admin-matrix">
+        <a href="./admin-evaluation.html" class="nav-item" data-view="admin-matrix">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <line x1="3" y1="9" x2="21" y2="9" />
@@ -74,7 +74,7 @@
           </svg>
           <span>Evaluation Matrix</span>
         </a>
-        <a href="#admin-rounds" class="nav-item" data-view="admin-rounds">
+        <a href="./admin-rounds.html" class="nav-item" data-view="admin-rounds">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="12 2 2 7 12 12 22 7 12 2" />
             <polyline points="2 17 12 22 22 17" />
@@ -82,13 +82,13 @@
           </svg>
           <span>Rounds &amp; Criteria</span>
         </a>
-        <a href="#admin-spocs" class="nav-item" data-view="admin-spocs">
+        <a href="./admin-spocs.html" class="nav-item" data-view="admin-spocs">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72" />
           </svg>
           <span>SPOC Management</span>
         </a>
-        <a href="#admin-audit" class="nav-item" data-view="admin-audit">
+        <a href="./admin-audit.html" class="nav-item" data-view="admin-audit">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -97,7 +97,7 @@
           </svg>
           <span>Audit Logs</span>
         </a>
-        <a href="#admin-users" class="nav-item" data-view="admin-users">
+        <a href="./admin-users.html" class="nav-item" data-view="admin-users">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -106,7 +106,7 @@
           </svg>
           <span>User Management</span>
         </a>
-        <a href="#admin-content" class="nav-item" data-view="admin-content">
+        <a href="./admin-content-releases.html" class="nav-item" data-view="admin-content">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -115,14 +115,14 @@
           </svg>
           <span>Content Releases</span>
         </a>
-        <a href="#admin-announcements" class="nav-item" data-view="admin-announcements">
+        <a href="./admin-announcements.html" class="nav-item" data-view="admin-announcements">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           <span>Announcements</span>
         </a>
-        <a href="#admin-results" class="nav-item" data-view="admin-results">
+        <a href="./admin-results.html" class="nav-item" data-view="admin-results">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
             <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
@@ -372,488 +372,6 @@
           </div>
         </section>
       </div>
-
-      <!-- View: Admin Judge Assignments -->
-      <div id="view-admin-assignments" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-assign-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/ASSIGNMENTS</div>
-            <h1 id="admin-assign-title" class="rubrics-title">JUDGE ASSIGNMENTS</h1>
-            <p class="rubrics-sub">Assign or unassign judges to finalist teams. Changes sync live to each judge's portal.</p>
-          </div>
-
-          <section class="kpi-strip" aria-label="Assignment overview metrics">
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">TOTAL TEAMS</span></div>
-              <div class="kpi-number kpi-num-white" id="admin-kpi-teams">0</div>
-              <div class="kpi-caption">Registered in Eventra</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">ACTIVE JUDGES</span></div>
-              <div class="kpi-number kpi-num-cyan" id="admin-kpi-judges">0</div>
-              <div class="kpi-caption">Verified Jury Accounts</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">ASSIGNED PAIRS</span></div>
-              <div class="kpi-number kpi-num-green" id="admin-kpi-pairs">0</div>
-              <div class="kpi-caption">Active Team-Judge Links</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">UNASSIGNED TEAMS</span></div>
-              <div class="kpi-number kpi-num-pink" id="admin-kpi-unassigned">0</div>
-              <div class="kpi-caption">Needs Judge Coverage</div>
-            </article>
-          </section>
-
-          <div class="admin-toolbar">
-            <input type="search" id="admin-assign-search" class="search-input" placeholder="Filter teams by name, leader, or sem..." aria-label="Filter assignment table" />
-            <div class="spoc-top-btns">
-              <button type="button" class="btn-draft" id="btn-import-judge-excel">IMPORT JUDGES EXCEL</button>
-              <input type="file" id="judge-excel-input" accept=".xlsx,.xls,.csv" hidden />
-            </div>
-          </div>
-
-          <div class="admin-table-card">
-            <div class="table-wrap" id="admin-assign-table-wrap"></div>
-          </div>
-        </section>
-      </div>
-
-      <!-- View: Admin Evaluation Matrix (/admin/evaluation) -->
-      <div id="view-admin-matrix" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-matrix-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/EVALUATION</div>
-            <h1 id="admin-matrix-title" class="rubrics-title">EVALUATION MATRIX</h1>
-            <p class="rubrics-sub">Live Team × Judge scorecard matrix with status telemetry and cumulative averages.</p>
-          </div>
-
-          <section class="kpi-strip" aria-label="Evaluation matrix telemetry">
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">TOTAL TEAMS</span></div>
-              <div class="kpi-number kpi-num-white" id="mx-kpi-teams">0</div>
-              <div class="kpi-caption">In Matrix</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">EVALUATED BALLOTS</span></div>
-              <div class="kpi-number kpi-num-green" id="mx-kpi-evaluated">0</div>
-              <div class="kpi-caption">Submitted Scores</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-gold">IN DRAFT</span></div>
-              <div class="kpi-number kpi-num-gold" id="mx-kpi-drafted">0</div>
-              <div class="kpi-caption">Saved Drafts</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">PENDING TEAMS</span></div>
-              <div class="kpi-number kpi-num-pink" id="mx-kpi-pending">0</div>
-              <div class="kpi-caption">No Final Score Yet</div>
-            </article>
-          </section>
-
-          <div class="admin-toolbar">
-            <input type="search" id="mx-search" class="search-input" placeholder="Search team, leader, or sem..." aria-label="Search evaluation matrix" />
-            <div class="spoc-top-btns">
-              <select id="mx-round-filter" class="round-select" aria-label="Filter matrix by round">
-                <option value="all">ALL ROUNDS</option>
-                <option value="1">ROUND 1</option>
-                <option value="2">ROUND 2</option>
-              </select>
-              <select id="mx-status-filter" class="round-select" aria-label="Filter matrix by status">
-                <option value="all">ALL STATUSES</option>
-                <option value="EVALUATED">EVALUATED</option>
-                <option value="DRAFTED">DRAFTED</option>
-                <option value="PENDING">PENDING</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="admin-table-card">
-            <div class="table-wrap" id="admin-matrix-table-wrap"></div>
-          </div>
-        </section>
-      </div>
-
-      <!-- View: Admin Rounds & Criteria -->
-      <div id="view-admin-rounds" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-rounds-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // ROUNDS &amp; CRITERIA</div>
-            <h1 id="admin-rounds-title" class="rubrics-title">ROUNDS &amp; CRITERIA</h1>
-            <p class="rubrics-sub">Control active evaluation rounds and configure scoring criteria used by all judges.</p>
-          </div>
-
-          <div class="admin-table-card">
-            <strong style="color: var(--color-10);">EVALUATION ROUNDS</strong>
-            <div id="admin-rounds-list" class="rounds-list"></div>
-          </div>
-
-          <form id="admin-add-criterion-form" class="admin-form-card">
-            <div class="admin-form-grid">
-              <input type="text" id="new-crit-name" class="search-input" placeholder="Criterion Name" required />
-              <input type="text" id="new-crit-desc" class="search-input" placeholder="Description" required />
-              <input type="number" id="new-crit-max" class="search-input" placeholder="Max Pts" min="1" max="100" value="20" required />
-              <button type="submit" class="btn-evaluate">ADD CRITERION →</button>
-            </div>
-          </form>
-
-          <div class="admin-table-card">
-            <div class="table-wrap" id="admin-criteria-table-wrap"></div>
-          </div>
-        </section>
-      </div>
-
-      <!-- View: Admin SPOC Management (Staff SPOC Allotment Console) -->
-      <div id="view-admin-spocs" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-spocs-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">• ADMINISTRATION // COORDINATION DESK</div>
-            <h1 id="admin-spocs-title" class="rubrics-title">SPOC MANAGEMENT &amp; TEAM ALLOTMENT</h1>
-            <p class="rubrics-sub">Every Staff / Club Member is automatically available as a Single Point of Contact (SPOC). Allot registered teams to staff members for mentoring and operational assistance.</p>
-          </div>
-
-          <div class="team-divider" aria-hidden="true"></div>
-
-          <!-- 5-Card KPI Strip -->
-          <section class="kpi-strip-5" aria-label="SPOC allotment telemetry">
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">TOTAL STAFF</span></div>
-              <div class="kpi-number kpi-num-pink" id="spoc-kpi-total-staff">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">ELIGIBLE SPOCS</span></div>
-              <div class="kpi-number kpi-num-gold" id="spoc-kpi-eligible">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">ASSIGNED SPOCS</span></div>
-              <div class="kpi-number kpi-num-green" id="spoc-kpi-assigned">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">UNASSIGNED SPOCS</span></div>
-              <div class="kpi-number kpi-num-gold" id="spoc-kpi-unassigned">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">TEAMS ALLOCATED</span></div>
-              <div class="kpi-number kpi-num-cyan" id="spoc-kpi-allocated">0</div>
-            </article>
-          </section>
-
-          <div class="spoc-console-layout">
-            <!-- Left: Staff SPOCs List -->
-            <aside class="spoc-list-panel" aria-label="Staff SPOCs list">
-              <div class="spoc-list-top">
-                <div>
-                  <h2 class="spoc-panel-title">STAFF SPOCS (<span id="spoc-total-count">0</span>)</h2>
-                  <div class="team-leader" id="spoc-summary-sub">0 assigned · 0 unassigned</div>
-                </div>
-                <div class="spoc-top-btns">
-                  <button type="button" class="btn-tk btn-tk-cyan" id="btn-spoc-autobalance">AUTO-BALANCE</button>
-                  <button type="button" class="btn-draft" id="btn-import-spoc-excel">IMPORT EXCEL</button>
-                  <input type="file" id="spoc-excel-input" accept=".xlsx,.xls,.csv" hidden />
-                  <button type="button" class="btn-signin-mini" id="btn-spoc-save-all">+ ASSIGN SPOC</button>
-                </div>
-              </div>
-
-              <input type="search" id="spoc-staff-search" class="search-input" style="min-width:0;width:100%;" placeholder="Search staff by name or email..." aria-label="Search staff SPOCs" />
-              <select id="spoc-staff-filter" class="round-select" style="width:100%;" aria-label="Filter staff by assignment status">
-                <option value="all">ALL STAFF</option>
-                <option value="assigned">Assigned Only</option>
-                <option value="unassigned">Unassigned Only</option>
-              </select>
-
-              <div id="spoc-staff-list" class="spoc-staff-list"></div>
-            </aside>
-
-            <!-- Right: Allotment Console -->
-            <div class="spoc-allot-panel">
-              <div class="spoc-allot-header">
-                <div class="spoc-selected-id">
-                  <span class="spoc-avatar" id="spoc-active-avatar">AN</span>
-                  <div>
-                    <div class="rubrics-kicker">STAFF SPOC ALLOTMENT CONSOLE</div>
-                    <h2 class="spoc-active-name" id="spoc-active-name">SELECT A SPOC</h2>
-                    <div class="team-leader" id="spoc-active-email">—</div>
-                  </div>
-                </div>
-                <div class="spoc-allot-actions">
-                  <button type="button" class="btn-draft" id="btn-spoc-select-filtered">SELECT FILTERED (0)</button>
-                  <button type="button" class="btn-draft" id="btn-spoc-clear-selected">CLEAR SELECTED</button>
-                  <button type="button" class="btn-danger-ghost" id="btn-spoc-delete-all">DELETE ALL ASSIGNMENTS</button>
-                </div>
-              </div>
-
-              <div class="spoc-filter-bar">
-                <input type="search" id="spoc-team-search" class="search-input" style="min-width:0;flex:1;" placeholder="Search available teams by name or leader..." aria-label="Search available teams" />
-                <select id="spoc-track-filter" class="round-select" aria-label="Filter teams by semester">
-                  <option value="all">ALL TRACKS</option>
-                  <option value="1ST SEM">1ST SEM</option>
-                  <option value="3RD SEM">3RD SEM</option>
-                </select>
-                <label class="remember-row">
-                  <input type="checkbox" id="spoc-show-allotted" class="remember-check" checked />
-                  <span>Show already allotted</span>
-                </label>
-              </div>
-
-              <div id="spoc-allot-teams-grid" class="spoc-teams-grid"></div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- View: Admin Audit Logs -->
-      <div id="view-admin-audit" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-audit-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // SECURITY &amp; ACTIVITY</div>
-            <h1 id="admin-audit-title" class="rubrics-title">AUDIT LOGS</h1>
-            <p class="rubrics-sub">Immutable record of logins, judge assignments, rubric changes, SPOC updates, and evaluations.</p>
-          </div>
-
-          <div class="admin-toolbar">
-            <input type="search" id="admin-audit-search" class="search-input" placeholder="Filter by actor, action, or target..." aria-label="Filter audit logs" />
-          </div>
-
-          <div class="admin-table-card">
-            <div class="table-wrap" id="admin-audit-table-wrap"></div>
-          </div>
-        </section>
-      </div>
-
-      <!-- View: Admin User Management -->
-      <div id="view-admin-users" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-users-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // ROLE &amp; ACCESS CONTROL</div>
-            <h1 id="admin-users-title" class="rubrics-title">USER MANAGEMENT</h1>
-            <p class="rubrics-sub">Change any user's role (e.g., SPOC ↔ Judge), add new portal accounts, or remove accounts.</p>
-          </div>
-
-          <form id="admin-add-user-form" class="admin-form-card">
-            <div class="admin-form-grid">
-              <input type="text" id="um-new-name" class="search-input" placeholder="Full Name" required />
-              <input type="text" id="um-new-username" class="search-input" placeholder="Username" required />
-              <input type="email" id="um-new-email" class="search-input" placeholder="Email" required />
-              <input type="password" id="um-new-password" class="search-input" placeholder="Password" required />
-              <select id="um-new-role" class="round-select" aria-label="Role">
-                <option value="judge">Judge</option>
-                <option value="spoc">SPOC</option>
-                <option value="staff">Staff</option>
-                <option value="team_leader">Team Leader</option>
-                <option value="participant">Participant</option>
-                <option value="admin">Admin</option>
-              </select>
-              <button type="submit" class="btn-evaluate">CREATE USER →</button>
-            </div>
-          </form>
-
-          <div class="admin-toolbar">
-            <input type="search" id="um-search" class="search-input" placeholder="Filter users by name, username, or email..." aria-label="Filter users" />
-            <select id="um-role-filter" class="round-select" aria-label="Filter by role">
-              <option value="all">ALL ROLES</option>
-              <option value="admin">Admin</option>
-              <option value="judge">Judge</option>
-              <option value="spoc">SPOC</option>
-              <option value="staff">Staff</option>
-              <option value="team_leader">Team Leader</option>
-              <option value="participant">Participant</option>
-            </select>
-          </div>
-
-          <div class="admin-table-card">
-            <div class="table-wrap" id="admin-users-table-wrap"></div>
-          </div>
-        </section>
-      </div>
-
-      <!-- View: Admin Content Releases (/admin/content-releases) -->
-      <div id="view-admin-content" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-content-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/CONTENT-RELEASES</div>
-            <h1 id="admin-content-title" class="rubrics-title">CONTENT RELEASES</h1>
-            <p class="rubrics-sub">Publish problem statements, certificate releases, announcements, and submission workspaces.</p>
-          </div>
-
-          <section class="kpi-strip" aria-label="Content release telemetry">
-            <article class="kpi-card">
-              <div class="kpi-card-top">
-                <span class="kpi-heading">ACTIVITIES</span>
-                <span class="kpi-icon-box kpi-icon-pink" aria-hidden="true">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF007F" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
-                </span>
-              </div>
-              <div class="kpi-number kpi-num-pink" id="cr-kpi-activities">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top">
-                <span class="kpi-heading">CONTENT ITEMS</span>
-                <span class="kpi-icon-box kpi-icon-cyan" aria-hidden="true">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                </span>
-              </div>
-              <div class="kpi-number kpi-num-cyan" id="cr-kpi-items">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top">
-                <span class="kpi-heading">PUBLISHED</span>
-                <span class="kpi-icon-box kpi-icon-green" aria-hidden="true">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
-                </span>
-              </div>
-              <div class="kpi-number kpi-num-green" id="cr-kpi-published">0</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top">
-                <span class="kpi-heading">DRAFTS</span>
-                <span class="kpi-icon-box kpi-icon-gold" aria-hidden="true">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FBC815" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                </span>
-              </div>
-              <div class="kpi-number kpi-num-gold" id="cr-kpi-drafts">0</div>
-            </article>
-          </section>
-
-          <div class="cr-toolbar">
-            <input type="search" id="cr-search" class="search-input" style="min-width:0;flex:1;" placeholder="Search activities and content..." aria-label="Search activities and content" />
-            <select id="cr-type-filter" class="round-select" aria-label="Filter activity types">
-              <option value="all">ALL ACTIVITY TYPES</option>
-              <option value="BUILT-IN">BUILT-IN</option>
-              <option value="CUSTOM">CUSTOM</option>
-            </select>
-            <button type="button" class="btn-signin-mini" id="btn-cr-create-activity">+ CREATE ACTIVITY</button>
-          </div>
-
-          <div id="cr-cards-grid" class="cr-cards-grid"></div>
-        </section>
-      </div>
-
-      <!-- View: Admin Announcements (/admin/announcements) -->
-      <div id="view-admin-announcements" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-ann-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/ANNOUNCEMENTS</div>
-            <h1 id="admin-ann-title" class="rubrics-title">ANNOUNCEMENTS</h1>
-            <p class="rubrics-sub">Broadcast live notices to Judge, SPOC, and Team portals in real time.</p>
-          </div>
-
-          <section class="kpi-strip" aria-label="Announcement telemetry">
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading">TOTAL BROADCASTS</span></div>
-              <div class="kpi-number kpi-num-white" id="ann-kpi-total">0</div>
-              <div class="kpi-caption">Recorded Notices</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">ACTIVE LIVE</span></div>
-              <div class="kpi-number kpi-num-green" id="ann-kpi-active">0</div>
-              <div class="kpi-caption">Showing on Portals</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">URGENT ALERTS</span></div>
-              <div class="kpi-number kpi-num-pink" id="ann-kpi-urgent">0</div>
-              <div class="kpi-caption">High Priority</div>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">ARCHIVED</span></div>
-              <div class="kpi-number kpi-num-cyan" id="ann-kpi-archived">0</div>
-              <div class="kpi-caption">Hidden from Feed</div>
-            </article>
-          </section>
-
-          <form id="admin-add-ann-form" class="ann-compose-card">
-            <div class="ann-compose-grid">
-              <input type="text" id="ann-title" class="search-input" placeholder="Announcement Title" required />
-              <select id="ann-audience" class="round-select" aria-label="Target audience">
-                <option value="ALL">ALL PORTALS</option>
-                <option value="JUDGES">JUDGES ONLY</option>
-                <option value="SPOCS">SPOCS ONLY</option>
-                <option value="TEAMS">TEAMS</option>
-              </select>
-              <select id="ann-priority" class="round-select" aria-label="Priority">
-                <option value="INFO">INFO</option>
-                <option value="IMPORTANT">IMPORTANT</option>
-                <option value="URGENT">URGENT</option>
-              </select>
-            </div>
-            <div class="ann-compose-bottom">
-              <input type="text" id="ann-message" class="search-input" style="min-width:0;flex:1;" placeholder="Broadcast message shown on target portal banners..." required />
-              <button type="submit" class="btn-signin-mini">BROADCAST ANNOUNCEMENT →</button>
-            </div>
-          </form>
-
-          <div class="admin-toolbar">
-            <input type="search" id="ann-search" class="search-input" placeholder="Search announcements..." aria-label="Search announcements" />
-            <select id="ann-audience-filter" class="round-select" aria-label="Filter announcements by audience">
-              <option value="all">ALL AUDIENCES</option>
-              <option value="ALL">ALL PORTALS</option>
-              <option value="JUDGES">JUDGES</option>
-              <option value="SPOCS">SPOCS</option>
-              <option value="TEAMS">TEAMS</option>
-            </select>
-          </div>
-
-          <div id="ann-feed-list" class="ann-feed-list"></div>
-        </section>
-      </div>
-
-      <!-- View: Admin Result Engine (/admin/results) -->
-      <div id="view-admin-results" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="admin-res-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/RESULTS</div>
-            <h1 id="admin-res-title" class="rubrics-title">RESULT ENGINE</h1>
-            <p class="rubrics-sub">Calculate final standings, aggregate multi-judge scores, export CSV, and publish official results.</p>
-          </div>
-
-          <section class="kpi-strip" aria-label="Result engine telemetry">
-            <article class="kpi-card res-card">
-              <div class="kpi-card-top"><span class="kpi-heading">TEAMS RANKED</span></div>
-              <div class="kpi-number kpi-num-white" id="res-kpi-teams">0</div>
-              <div class="kpi-caption">Evaluated Cohort</div>
-            </article>
-            <article class="kpi-card res-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">BALLOTS AGGREGATED</span></div>
-              <div class="kpi-number kpi-num-cyan" id="res-kpi-ballots">0</div>
-              <div class="kpi-caption">Submitted Evaluations</div>
-            </article>
-            <article class="kpi-card res-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-gold">TOP SCORE</span></div>
-              <div class="kpi-number kpi-num-gold" id="res-kpi-top">0.0</div>
-              <div class="kpi-caption" id="res-kpi-leader">Awaiting scores</div>
-            </article>
-            <article class="kpi-card res-card">
-              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">ENGINE STATUS</span></div>
-              <div class="ops-engine-value" id="res-kpi-status">Draft / Unreleased</div>
-              <div class="kpi-caption">Live Publication State</div>
-            </article>
-          </section>
-
-          <div class="admin-toolbar">
-            <div class="spoc-top-btns">
-              <input type="search" id="res-search" class="search-input" placeholder="Search ranked teams..." aria-label="Search result standings" />
-              <select id="res-round-filter" class="round-select" aria-label="Filter results by round">
-                <option value="all">ALL ROUNDS</option>
-                <option value="1">ROUND 1</option>
-                <option value="2">ROUND 2</option>
-              </select>
-              <select id="res-sem-filter" class="round-select" aria-label="Filter results by semester">
-                <option value="all">ALL SEMESTERS</option>
-                <option value="1ST SEM">1ST SEM</option>
-                <option value="3RD SEM">3RD SEM</option>
-              </select>
-            </div>
-            <div class="spoc-top-btns">
-              <button type="button" class="btn-tk btn-tk-cyan" id="btn-res-recalc">RECALCULATE</button>
-              <button type="button" class="btn-draft" id="btn-res-export">EXPORT CSV</button>
-              <button type="button" class="btn-signin-mini" id="btn-res-publish">PUBLISH RESULTS</button>
-            </div>
-          </div>
-
-          <div class="res-table-card">
-            <div class="table-wrap" id="admin-results-table-wrap"></div>
-          </div>
-        </section>
-      </div>
     </main>
   </div>
 
@@ -880,56 +398,10 @@
     </div>
   </div>
 
-  <!-- Content Release Workspace Modal -->
-  <div id="cr-workspace-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="cr-ws-title">
-    <div class="modal-panel roster-modal-panel">
-      <div class="modal-header">
-        <div>
-          <div class="rubrics-kicker" id="cr-ws-kicker">CONTENT WORKSPACE</div>
-          <h2 id="cr-ws-title" class="modal-title">ACTIVITY</h2>
-        </div>
-        <button type="button" class="btn-icon" id="btn-close-cr-ws" aria-label="Close workspace">✕</button>
-      </div>
-
-      <form id="cr-add-item-form" class="admin-form-grid" style="grid-template-columns: minmax(0,1fr) minmax(0,1.4fr) auto auto;">
-        <input type="text" id="cr-item-title" class="search-input" placeholder="Item Title" required />
-        <input type="text" id="cr-item-body" class="search-input" placeholder="Content brief / URL / Notice" required />
-        <select id="cr-item-status" class="round-select" aria-label="Publish status">
-          <option value="PUBLISHED">PUBLISHED</option>
-          <option value="DRAFT">DRAFT</option>
-        </select>
-        <button type="submit" class="btn-evaluate">ADD ITEM →</button>
-      </form>
-
-      <div class="table-wrap" id="cr-ws-table"></div>
-    </div>
-  </div>
-
-  <!-- Create Activity Modal -->
-  <div id="cr-create-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="cr-create-title">
-    <div class="modal-panel roster-modal-panel" style="max-width: 520px;">
-      <div class="modal-header">
-        <div>
-          <div class="rubrics-kicker">NEW CONTENT STREAM</div>
-          <h2 id="cr-create-title" class="modal-title">CREATE ACTIVITY</h2>
-        </div>
-        <button type="button" class="btn-icon" id="btn-close-cr-create" aria-label="Close create activity dialog">✕</button>
-      </div>
-
-      <form id="cr-create-form" class="login-form">
-        <input type="text" id="cr-new-title" class="search-input" style="min-width:0;width:100%;" placeholder="Activity Title (e.g. MENTOR HOURS)" required />
-        <input type="text" id="cr-new-kicker" class="search-input" style="min-width:0;width:100%;" placeholder="Category Kicker (e.g. SCHEDULE)" required />
-        <input type="text" id="cr-new-desc" class="search-input" style="min-width:0;width:100%;" placeholder="Short description..." required />
-        <button type="submit" class="btn-signin">CREATE ACTIVITY →</button>
-      </form>
-    </div>
-  </div>
-
   <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=32" defer></script>
+  <script src="./app.js?v=33" defer></script>
 </body>
 </html>

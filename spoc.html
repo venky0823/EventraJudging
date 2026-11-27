@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EVENTRA | IVC PULSE — SPOC Portal</title>
+  <title>EVENTRA | IVC PULSE — SPOC My Teams</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./tokens.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body data-page="spoc">
+<body data-page="spoc" data-section="spoc-teams">
   <a class="skip-link" href="#main-content">Skip to SPOC workspace</a>
 
   <div class="app-shell" id="app-shell">
@@ -48,7 +48,7 @@
 
       <nav class="sidebar-nav" aria-label="SPOC navigation">
         <div class="nav-section-label">SPOC WORKSPACE</div>
-        <a href="#spoc-teams" class="nav-item is-active" data-view="spoc-teams" aria-current="page">
+        <a href="./spoc.html" class="nav-item is-active" data-view="spoc-teams" aria-current="page">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -57,7 +57,7 @@
           </svg>
           <span>My Assigned Teams</span>
         </a>
-        <a href="#spoc-readiness" class="nav-item" data-view="spoc-readiness">
+        <a href="./spoc-readiness.html" class="nav-item" data-view="spoc-readiness">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="9 11 12 14 22 4" />
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
@@ -146,21 +146,6 @@
           <section class="teams-grid" id="spoc-teams-grid" aria-label="SPOC assigned teams"></section>
         </section>
       </div>
-
-      <!-- View: Check-In & Readiness Matrix -->
-      <div id="view-spoc-readiness" class="view-panel" hidden>
-        <section class="admin-panel" aria-labelledby="spoc-readiness-title">
-          <div class="rubrics-header">
-            <div class="rubrics-kicker">SPOC // READINESS TABLE</div>
-            <h1 id="spoc-readiness-title" class="rubrics-title">CHECK-IN &amp; READINESS</h1>
-            <p class="rubrics-sub">Quick overview of check-in, deck verification, assigned judge, and coordinator notes.</p>
-          </div>
-
-          <div class="admin-table-card">
-            <div class="table-wrap" id="spoc-readiness-table-wrap"></div>
-          </div>
-        </section>
-      </div>
     </main>
   </div>
 
@@ -168,6 +153,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=32" defer></script>
+  <script src="./app.js?v=33" defer></script>
 </body>
 </html>

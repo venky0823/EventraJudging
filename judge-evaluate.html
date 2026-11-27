@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVENTRA | IVC PULSE — Team Evaluation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="./tokens.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-page="judge" data-section="evaluate">
+  <a class="skip-link" href="#main-content">Skip to team evaluation</a>
+
+  <div class="app-shell" id="app-shell">
+    <!-- Left Fixed Judge Sidebar -->
+    <aside class="sidebar" aria-label="Judge Portal Sidebar">
+      <div class="sidebar-top">
+        <div class="brand-card">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <path d="M18 5L29 27H23.5L18 15.5L12.5 27H7L18 5Z" fill="#FFFFFF" />
+              <path d="M14.5 22H21.5L18 16.5L14.5 22Z" fill="#00F0FF" />
+            </svg>
+            <span class="brand-logo-text">EVENTRA</span>
+          </div>
+        </div>
+
+        <div class="portal-identity">
+          <div class="portal-title-row">
+            <span class="portal-title">JUDGE PORTAL</span>
+          </div>
+          <div class="portal-subtitle">EVALUATION COMMITTEE</div>
+        </div>
+
+        <div class="event-status-pill" role="status" aria-live="polite">
+          <span class="event-status-left">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span>IDEATHON — LIVE</span>
+          </span>
+          <span class="event-year">2026</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Judge navigation">
+        <div class="nav-section-label">NAVIGATION</div>
+        <a href="./judge.html" class="nav-item is-active" data-view="teams" aria-current="page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span>Assigned Teams</span>
+        </a>
+        <a href="./judge-rubrics.html" class="nav-item" data-view="rubrics">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </svg>
+          <span>Judging Rubrics</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="jury-auth-card">
+          <div class="jury-auth-kicker">JUDGE PORTAL</div>
+          <div class="jury-auth-title" id="sidebar-user-label">JURY EVALUATION PANEL</div>
+          <div class="jury-auth-row">
+            <span>Scorecard Auth</span>
+            <span class="auth-verified">VERIFIED</span>
+          </div>
+        </div>
+
+        <button type="button" class="signout-link" id="btn-sign-out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>SIGN OUT (JUDGE)</span>
+        </button>
+
+        <div class="sidebar-build-meta">
+          <span>BUILD: ViceVerse v2.0</span>
+          <span>IVC 2026</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Judge Workspace -->
+    <main id="main-content" class="main-workspace">
+      <section class="broadcast-bar" aria-label="Judge portal broadcasts">
+        <div class="broadcast-left">
+          <span class="broadcast-icon-box" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+          </span>
+          <span class="broadcast-badge">JUDGE PORTAL BROADCASTS</span>
+          <span class="broadcast-msg" id="portal-broadcast-msg">No active announcements for this portal. All systems operational.</span>
+        </div>
+        <div class="live-sync-pill" id="sync-status-pill" role="status" aria-live="polite">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="sync-status-text">Syncing...</span>
+        </div>
+      </section>
+
+      <!-- View: Team Evaluation -->
+      <div id="view-evaluate" class="view-panel">
+        <section class="eval-page" aria-labelledby="eval-team-name">
+          <button type="button" class="back-link" id="btn-back-teams">← BACK TO ASSIGNED TEAMS</button>
+
+          <div class="eval-header-row">
+            <div>
+              <div class="sem-label" id="eval-team-sem">1ST SEM</div>
+              <h1 id="eval-team-name" class="eval-team-title">CYBER TITANS</h1>
+              <div class="team-leader" id="eval-team-meta">Leader: Keerthana KK | Members: 4</div>
+            </div>
+            <div class="active-round-box">
+              <span class="active-round-label">ACTIVE ROUND</span>
+              <span class="active-round-value" id="eval-active-round">PRELIMINARY ROUND</span>
+            </div>
+          </div>
+
+          <div class="team-divider" aria-hidden="true"></div>
+
+          <div class="timekeeper-bar">
+            <div class="timekeeper-left">
+              <span class="timekeeper-title">LIVE PRESENTATION &amp; Q&amp;A PITCH TIMEKEEPER</span>
+              <span class="tk-badge tk-badge-muted" id="tk-visibility-badge">HIDDEN</span>
+              <span class="tk-badge tk-badge-online">ONLINE (AUTO-SYNC)</span>
+              <span class="tk-timer-readout" id="tk-timer-readout" hidden>05:00</span>
+            </div>
+            <div class="timekeeper-actions">
+              <button type="button" class="btn-tk btn-tk-gold" id="btn-call-pitch">CALL TEAM TO PITCH</button>
+              <button type="button" class="btn-tk btn-tk-magenta" id="btn-launch-timer">LAUNCH PITCH TIMER</button>
+            </div>
+          </div>
+
+          <section class="deliverables-card" aria-labelledby="deliverables-heading">
+            <div class="deliverables-header">
+              <h2 id="deliverables-heading" class="deliverables-title">TEAM SUBMISSION &amp; DELIVERABLES</h2>
+            </div>
+            <div class="deliverables-grid" id="deliverables-grid"></div>
+          </section>
+
+          <section class="rubric-box" aria-labelledby="eval-rubric-heading">
+            <div class="rubric-box-header">
+              <div>
+                <h2 id="eval-rubric-heading" class="rubric-box-title">EVALUATION RUBRIC</h2>
+                <p class="rubric-box-sub">Score each criterion within its bounded range.</p>
+              </div>
+              <div class="cumulative-box">
+                <span class="cumulative-label">CUMULATIVE SCORE</span>
+                <strong class="cumulative-value" id="eval-cumulative-score" aria-live="polite">0 / 100 PTS</strong>
+              </div>
+            </div>
+
+            <div class="team-divider" aria-hidden="true"></div>
+            <div id="eval-criteria-list" class="eval-criteria-list"></div>
+            <div class="team-divider" aria-hidden="true"></div>
+
+            <div class="rubric-box-footer">
+              <span class="rubric-footer-note">Drafts can be adjusted anytime before round locking.</span>
+              <div class="rubric-footer-actions">
+                <button type="button" class="btn-save-draft" id="btn-save-draft"><span>SAVE DRAFT</span></button>
+                <button type="button" class="btn-submit-final" id="btn-submit-eval"><span>SUBMIT FINAL EVALUATION</span></button>
+              </div>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js?v=33" defer></script>
+</body>
+</html>

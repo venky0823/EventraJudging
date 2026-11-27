@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVENTRA | IVC PULSE — Announcements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="./tokens.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-page="admin" data-section="admin-announcements">
+  <a class="skip-link" href="#main-content">Skip to announcements</a>
+
+  <div class="app-shell" id="app-shell">
+    <!-- Left Fixed Admin Sidebar -->
+    <aside class="sidebar" aria-label="Admin Portal Sidebar">
+      <div class="sidebar-top">
+        <div class="brand-card">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <path d="M18 5L29 27H23.5L18 15.5L12.5 27H7L18 5Z" fill="#FFFFFF" />
+              <path d="M14.5 22H21.5L18 16.5L14.5 22Z" fill="#00F0FF" />
+            </svg>
+            <span class="brand-logo-text">EVENTRA</span>
+          </div>
+        </div>
+
+        <div class="portal-identity">
+          <div class="portal-title-row">
+            <span class="portal-title">ADMIN PORTAL</span>
+          </div>
+          <div class="portal-subtitle">FULL SYSTEM CONTROL</div>
+        </div>
+
+        <div class="event-status-pill" role="status" aria-live="polite">
+          <span class="event-status-left">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span>IDEATHON — LIVE</span>
+          </span>
+          <span class="event-year">2026</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Admin navigation">
+        <div class="nav-section-label">ADMINISTRATION</div>
+        <a href="./admin.html" class="nav-item" data-view="admin-overview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="9" />
+            <rect x="14" y="3" width="7" height="5" />
+            <rect x="14" y="12" width="7" height="9" />
+            <rect x="3" y="16" width="7" height="5" />
+          </svg>
+          <span>Overview</span>
+        </a>
+        <a href="./admin-assignments.html" class="nav-item" data-view="admin-assignments">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <polyline points="16 11 18 13 22 9" />
+          </svg>
+          <span>Judge Assignments</span>
+        </a>
+        <a href="./admin-evaluation.html" class="nav-item" data-view="admin-matrix">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="3" y1="15" x2="21" y2="15" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+          </svg>
+          <span>Evaluation Matrix</span>
+        </a>
+        <a href="./admin-rounds.html" class="nav-item" data-view="admin-rounds">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </svg>
+          <span>Rounds &amp; Criteria</span>
+        </a>
+        <a href="./admin-spocs.html" class="nav-item" data-view="admin-spocs">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72" />
+          </svg>
+          <span>SPOC Management</span>
+        </a>
+        <a href="./admin-audit.html" class="nav-item" data-view="admin-audit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <span>Audit Logs</span>
+        </a>
+        <a href="./admin-users.html" class="nav-item" data-view="admin-users">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span>User Management</span>
+        </a>
+        <a href="./admin-content-releases.html" class="nav-item" data-view="admin-content">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <path d="M12 18v-6" />
+            <path d="m9 15 3-3 3 3" />
+          </svg>
+          <span>Content Releases</span>
+        </a>
+        <a href="./admin-announcements.html" class="nav-item is-active" data-view="admin-announcements" aria-current="page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span>Announcements</span>
+        </a>
+        <a href="./admin-results.html" class="nav-item" data-view="admin-results">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+            <path d="M4 22h16" />
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+          </svg>
+          <span>Result Engine</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="jury-auth-card">
+          <div class="jury-auth-kicker">ADMIN PORTAL</div>
+          <div class="jury-auth-title" id="sidebar-user-label">IVC Admin (ADMIN)</div>
+          <div class="jury-auth-row">
+            <span>System Auth</span>
+            <span class="auth-verified">VERIFIED</span>
+          </div>
+        </div>
+
+        <button type="button" class="signout-link" id="btn-sign-out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>SIGN OUT (ADMIN)</span>
+        </button>
+
+        <div class="sidebar-build-meta">
+          <span>BUILD: ViceVerse v2.0</span>
+          <span>IVC 2026</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Admin Workspace -->
+    <main id="main-content" class="main-workspace">
+      <section class="broadcast-bar" aria-label="Admin portal broadcasts">
+        <div class="broadcast-left">
+          <span class="broadcast-icon-box" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+          </span>
+          <span class="broadcast-badge">ADMIN COMMAND BROADCASTS</span>
+          <span class="broadcast-msg">Full administrative access active. All changes sync live to Supabase.</span>
+        </div>
+        <div class="live-sync-pill" id="sync-status-pill" role="status" aria-live="polite">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="sync-status-text">Syncing...</span>
+        </div>
+      </section>
+
+      <!-- View: Admin Announcements (/admin/announcements) -->
+      <div id="view-admin-announcements" class="view-panel">
+        <section class="admin-panel" aria-labelledby="admin-ann-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/ANNOUNCEMENTS</div>
+            <h1 id="admin-ann-title" class="rubrics-title">ANNOUNCEMENTS</h1>
+            <p class="rubrics-sub">Broadcast live notices to Judge, SPOC, and Team portals in real time.</p>
+          </div>
+
+          <section class="kpi-strip" aria-label="Announcement telemetry">
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading">TOTAL BROADCASTS</span></div>
+              <div class="kpi-number kpi-num-white" id="ann-kpi-total">0</div>
+              <div class="kpi-caption">Recorded Notices</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">ACTIVE LIVE</span></div>
+              <div class="kpi-number kpi-num-green" id="ann-kpi-active">0</div>
+              <div class="kpi-caption">Showing on Portals</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">URGENT ALERTS</span></div>
+              <div class="kpi-number kpi-num-pink" id="ann-kpi-urgent">0</div>
+              <div class="kpi-caption">High Priority</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">ARCHIVED</span></div>
+              <div class="kpi-number kpi-num-cyan" id="ann-kpi-archived">0</div>
+              <div class="kpi-caption">Hidden from Feed</div>
+            </article>
+          </section>
+
+          <form id="admin-add-ann-form" class="ann-compose-card">
+            <div class="ann-compose-grid">
+              <input type="text" id="ann-title" class="search-input" placeholder="Announcement Title" required />
+              <select id="ann-audience" class="round-select" aria-label="Target audience">
+                <option value="ALL">ALL PORTALS</option>
+                <option value="JUDGES">JUDGES ONLY</option>
+                <option value="SPOCS">SPOCS ONLY</option>
+                <option value="TEAMS">TEAMS</option>
+              </select>
+              <select id="ann-priority" class="round-select" aria-label="Priority">
+                <option value="INFO">INFO</option>
+                <option value="IMPORTANT">IMPORTANT</option>
+                <option value="URGENT">URGENT</option>
+              </select>
+            </div>
+            <div class="ann-compose-bottom">
+              <input type="text" id="ann-message" class="search-input" style="min-width:0;flex:1;" placeholder="Broadcast message shown on target portal banners..." required />
+              <button type="submit" class="btn-signin-mini">BROADCAST ANNOUNCEMENT →</button>
+            </div>
+          </form>
+
+          <div class="admin-toolbar">
+            <input type="search" id="ann-search" class="search-input" placeholder="Search announcements..." aria-label="Search announcements" />
+            <select id="ann-audience-filter" class="round-select" aria-label="Filter announcements by audience">
+              <option value="all">ALL AUDIENCES</option>
+              <option value="ALL">ALL PORTALS</option>
+              <option value="JUDGES">JUDGES</option>
+              <option value="SPOCS">SPOCS</option>
+              <option value="TEAMS">TEAMS</option>
+            </select>
+          </div>
+
+          <div id="ann-feed-list" class="ann-feed-list"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js?v=33" defer></script>
+</body>
+</html>
