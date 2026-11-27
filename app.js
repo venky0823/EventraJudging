@@ -51,6 +51,12 @@ const state = {
   announcements: [],
   annSearch: '',
   annAudienceFilter: 'all',
+  mxSearch: '',
+  mxRoundFilter: 'all',
+  mxStatusFilter: 'all',
+  resSearch: '',
+  resRoundFilter: 'all',
+  resSemFilter: 'all',
   round: 'all',
   assignFilter: '',
   auditFilter: '',
@@ -117,6 +123,7 @@ function showView(viewId) {
     'view-admin-users',
     'view-admin-content',
     'view-admin-announcements',
+    'view-admin-results',
     'view-spoc-teams',
     'view-spoc-readiness'
   ].forEach((id) => {
@@ -650,23 +657,54 @@ function renderAdminViews() {
     </table>
   `;
 
-  // 3. Evaluation Matrix
+  // 3. Evaluation Matrix (/admin/evaluation)
+  const evalBallots = state.allEvaluations.filter((e) => e.status === 'EVALUATED').length;
+  const draftBallots = state.allEvaluations.filter((e) => e.status === 'DRAFTED').length;
+  const evaluatedTeamSet = new Set(state.allEvaluations.filter((e) => e.status === 'EVALUATED').map((e) => e.team_id));
+  const pendingTeamsCount = Math.max(0, state.allTeams.length - evaluatedTeamSet.size);
+
+  if (document.getElementById('mx-kpi-teams')) {
+    document.getElementById('mx-kpi-teams').textContent = String(state.allTeams.length);
+    document.getElementById('mx-kpi-evaluated').textContent = String(evalBallots);
+    document.getElementById('mx-kpi-drafted').textContent = String(draftBallots);
+    document.getElementById('mx-kpi-pending').textContent = String(pendingTeamsCount);
+  }
+
+  const mq = state.mxSearch.trim().toLowerCase();
+  const mxTeams = state.allTeams.filter((t) => {
+    const matchText =
+      t.name.toLowerCase().includes(mq) ||
+      t.leader.toLowerCase().includes(mq) ||
+      t.sem.toLowerCase().includes(mq);
+    const matchRound = state.mxRoundFilter === 'all' || t.round === state.mxRoundFilter;
+    const teamEvals = state.allEvaluations.filter((e) => e.team_id === t.id);
+    const teamStatus = teamEvals.some((e) => e.status === 'EVALUATED')
+      ? 'EVALUATED'
+      : teamEvals.some((e) => e.status === 'DRAFTED')
+        ? 'DRAFTED'
+        : 'PENDING';
+    const matchStatus = state.mxStatusFilter === 'all' || teamStatus === state.mxStatusFilter;
+    return matchText && matchRound && matchStatus;
+  });
+
   document.getElementById('admin-matrix-table-wrap').innerHTML = `
     <table class="admin-table">
       <thead>
         <tr>
           <th>Team</th>
+          <th>Round</th>
           ${state.judges.map((j) => `<th>${j.display_name}</th>`).join('')}
           <th>Average</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
-        ${state.allTeams
+        ${mxTeams
           .map((t) => {
             const cells = state.judges.map((j) => {
               const ev = state.allEvaluations.find((e) => e.team_id === t.id && e.judge_id === j.username);
-              if (!ev) return `<td><span class="status-pill">PENDING</span></td>`;
-              const cls = ev.status === 'EVALUATED' ? 'is-evaluated' : 'is-drafted';
+              if (!ev) return `<td><span class="status-pill mx-pill-rose">PENDING</span></td>`;
+              const cls = ev.status === 'EVALUATED' ? 'is-evaluated' : 'mx-pill-amber';
               return `<td><span class="status-pill ${cls}">${ev.total_score} / ${maxTotal}</span></td>`;
             });
             const teamEvals = state.allEvaluations.filter((e) => e.team_id === t.id && e.status !== 'PENDING');
@@ -674,11 +712,20 @@ function renderAdminViews() {
               teamEvals.length > 0
                 ? (teamEvals.reduce((s, e) => s + Number(e.total_score || 0), 0) / teamEvals.length).toFixed(1)
                 : '0.0';
+            const overallStatus = teamEvals.some((e) => e.status === 'EVALUATED')
+              ? 'EVALUATED'
+              : teamEvals.some((e) => e.status === 'DRAFTED')
+                ? 'DRAFTED'
+                : 'PENDING';
+            const overallCls =
+              overallStatus === 'EVALUATED' ? 'is-evaluated' : overallStatus === 'DRAFTED' ? 'mx-pill-amber' : 'mx-pill-rose';
             return `
               <tr>
                 <td><strong>${t.name}</strong><br><span class="team-leader">${t.sem} · ${t.leader}</span></td>
+                <td>Round ${t.round}</td>
                 ${cells.join('')}
                 <td><strong style="color: var(--accent-primary);">${avg} / ${maxTotal}</strong></td>
+                <td><span class="status-pill ${overallCls}">${overallStatus}</span></td>
               </tr>
             `;
           })
@@ -1065,6 +1112,88 @@ function renderAdminViews() {
         .join('');
     }
   }
+
+  // 10. Result Engine (/admin/results)
+  const resWrap = document.getElementById('admin-results-table-wrap');
+  if (resWrap) {
+    const rq = state.resSearch.trim().toLowerCase();
+    const ranked = getCalculatedStandings().filter((row) => {
+      const matchText =
+        row.team.name.toLowerCase().includes(rq) ||
+        row.team.leader.toLowerCase().includes(rq) ||
+        row.team.sem.toLowerCase().includes(rq);
+      const matchRound = state.resRoundFilter === 'all' || row.team.round === state.resRoundFilter;
+      const matchSem = state.resSemFilter === 'all' || row.team.sem === state.resSemFilter;
+      return matchText && matchRound && matchSem;
+    });
+
+    const submittedAll = state.allEvaluations.filter((e) => e.status === 'EVALUATED').length;
+    const topRow = ranked[0];
+
+    document.getElementById('res-kpi-teams').textContent = String(ranked.filter((r) => r.judgesScored > 0).length);
+    document.getElementById('res-kpi-ballots').textContent = String(submittedAll);
+    document.getElementById('res-kpi-top').textContent = topRow ? topRow.avgScore.toFixed(1) : '0.0';
+    document.getElementById('res-kpi-leader').textContent = topRow && topRow.avgScore > 0 ? topRow.team.name : 'Awaiting scores';
+
+    const statusEl = document.getElementById('res-kpi-status');
+    statusEl.textContent = state.resultsEngine;
+    statusEl.classList.toggle('is-live', state.resultsEngine === 'Published / Live');
+
+    const pubBtn = document.getElementById('btn-res-publish');
+    if (pubBtn) {
+      pubBtn.textContent = state.resultsEngine === 'Published / Live' ? 'SET TO DRAFT' : 'PUBLISH RESULTS';
+    }
+
+    resWrap.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Semester</th>
+            <th>Round</th>
+            <th>Judges</th>
+            <th>Final Score</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ranked
+            .map((row, idx) => {
+              const rankNum = idx + 1;
+              const badgeCls = rankNum <= 3 && row.avgScore > 0 ? `is-top-${rankNum}` : '';
+              return `
+                <tr>
+                  <td><span class="rank-badge ${badgeCls}">#${rankNum}</span></td>
+                  <td><strong>${row.team.name}</strong><br><span class="team-leader">${row.team.leader}</span></td>
+                  <td><span class="sem-label">${row.team.sem}</span></td>
+                  <td>Round ${row.team.round}</td>
+                  <td>${row.judgesScored}</td>
+                  <td><strong style="color: var(--accent-primary);">${row.avgScore.toFixed(1)} / ${maxTotal}</strong></td>
+                  <td><span class="status-pill ${row.judgesScored > 0 ? 'is-evaluated' : 'mx-pill-rose'}">${row.judgesScored > 0 ? 'QUALIFIED' : 'PENDING'}</span></td>
+                </tr>
+              `;
+            })
+            .join('')}
+        </tbody>
+      </table>
+    `;
+  }
+}
+
+function getCalculatedStandings() {
+  return state.allTeams
+    .map((t) => {
+      const submitted = state.allEvaluations.filter((e) => e.team_id === t.id && e.status === 'EVALUATED');
+      const fallback = state.allEvaluations.filter((e) => e.team_id === t.id && e.status !== 'PENDING');
+      const used = submitted.length > 0 ? submitted : fallback;
+      const avgScore =
+        used.length > 0
+          ? used.reduce((sum, e) => sum + Number(e.total_score || 0), 0) / used.length
+          : 0;
+      return { team: t, judgesScored: used.length, avgScore };
+    })
+    .sort((a, b) => b.avgScore - a.avgScore || a.team.name.localeCompare(b.team.name));
 }
 
 function renderCrWorkspaceTable() {
@@ -2449,6 +2578,85 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Deleted announcement.');
       await syncFromSupabase();
     }
+  });
+
+  // Admin: Evaluation Matrix Filters
+  document.getElementById('mx-search')?.addEventListener('input', (e) => {
+    state.mxSearch = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('mx-round-filter')?.addEventListener('change', (e) => {
+    state.mxRoundFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('mx-status-filter')?.addEventListener('change', (e) => {
+    state.mxStatusFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  // Admin: Result Engine (/admin/results)
+  document.getElementById('res-search')?.addEventListener('input', (e) => {
+    state.resSearch = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('res-round-filter')?.addEventListener('change', (e) => {
+    state.resRoundFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('res-sem-filter')?.addEventListener('change', (e) => {
+    state.resSemFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('btn-res-recalc')?.addEventListener('click', async () => {
+    await syncFromSupabase();
+    await writeAuditLog('RESULTS_RECALCULATED', 'Result Engine', `Ranked ${state.allTeams.length} teams`);
+    showToast('Result Engine recalculated live standings from Supabase.');
+  });
+
+  document.getElementById('btn-res-publish')?.addEventListener('click', async () => {
+    if (!isAdmin() || !state.supabase) return;
+    const next = state.resultsEngine === 'Draft / Unreleased' ? 'Published / Live' : 'Draft / Unreleased';
+    const { error } = await state.supabase
+      .from('event_settings')
+      .upsert({ key: 'results_engine', value: next, updated_at: new Date().toISOString() });
+    if (!error) {
+      await writeAuditLog('RESULTS_ENGINE', 'Eventra IVC', `Changed to ${next}`);
+      showToast(`Result Engine set to ${next}.`);
+      await syncFromSupabase();
+    }
+  });
+
+  document.getElementById('btn-res-export')?.addEventListener('click', () => {
+    const standings = getCalculatedStandings();
+    const maxTotal = maxPossibleScore();
+    const lines = [
+      ['Rank', 'Team', 'Leader', 'Semester', 'Round', 'Judges Scored', 'Final Score', 'Max Score'].join(','),
+      ...standings.map((r, i) =>
+        [
+          i + 1,
+          `"${r.team.name}"`,
+          `"${r.team.leader}"`,
+          `"${r.team.sem}"`,
+          r.team.round,
+          r.judgesScored,
+          r.avgScore.toFixed(1),
+          maxTotal
+        ].join(',')
+      )
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'eventra-ivc-results.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Exported official results CSV.');
   });
 
   // Sign out

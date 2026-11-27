@@ -7,6 +7,7 @@
   /* Colors */
   --bg-color: #050508;
   --surface-color: #0D0D14;
+  --surface-color-light: #161622;
   --accent-primary-hover: #E0B010;
   --accent-primary: #FBC815;
   --accent-secondary: #FF007F;
@@ -27,6 +28,11 @@
   --ann-border: #374151;
   --ann-bg-dark: #1F2937;
   --ann-text-light: #D1D5DB;
+  --eval-rose: #F43F5E;
+  --eval-rose-soft: #FB7185;
+  --eval-rose-light: #FDA4AF;
+  --eval-amber: #F59E0B;
+  --eval-amber-soft: #FBBF24;
 
   /* Derived surface & border opacities using only palette colors */
   --surface-elevated: rgba(255, 255, 255, 0.04);

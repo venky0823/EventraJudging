@@ -122,6 +122,17 @@
           </svg>
           <span>Announcements</span>
         </a>
+        <a href="#admin-results" class="nav-item" data-view="admin-results">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+            <path d="M4 22h16" />
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+          </svg>
+          <span>Result Engine</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -408,13 +419,53 @@
         </section>
       </div>
 
-      <!-- View: Admin Evaluation Matrix -->
+      <!-- View: Admin Evaluation Matrix (/admin/evaluation) -->
       <div id="view-admin-matrix" class="view-panel" hidden>
         <section class="admin-panel" aria-labelledby="admin-matrix-title">
           <div class="rubrics-header">
-            <div class="rubrics-kicker">ADMINISTRATION // EVALUATION MATRIX</div>
+            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/EVALUATION</div>
             <h1 id="admin-matrix-title" class="rubrics-title">EVALUATION MATRIX</h1>
-            <p class="rubrics-sub">Live Team × Judge scorecard matrix with cumulative averages across all jury members.</p>
+            <p class="rubrics-sub">Live Team × Judge scorecard matrix with status telemetry and cumulative averages.</p>
+          </div>
+
+          <section class="kpi-strip" aria-label="Evaluation matrix telemetry">
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading">TOTAL TEAMS</span></div>
+              <div class="kpi-number kpi-num-white" id="mx-kpi-teams">0</div>
+              <div class="kpi-caption">In Matrix</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-green">EVALUATED BALLOTS</span></div>
+              <div class="kpi-number kpi-num-green" id="mx-kpi-evaluated">0</div>
+              <div class="kpi-caption">Submitted Scores</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-gold">IN DRAFT</span></div>
+              <div class="kpi-number kpi-num-gold" id="mx-kpi-drafted">0</div>
+              <div class="kpi-caption">Saved Drafts</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">PENDING TEAMS</span></div>
+              <div class="kpi-number kpi-num-pink" id="mx-kpi-pending">0</div>
+              <div class="kpi-caption">No Final Score Yet</div>
+            </article>
+          </section>
+
+          <div class="admin-toolbar">
+            <input type="search" id="mx-search" class="search-input" placeholder="Search team, leader, or sem..." aria-label="Search evaluation matrix" />
+            <div class="spoc-top-btns">
+              <select id="mx-round-filter" class="round-select" aria-label="Filter matrix by round">
+                <option value="all">ALL ROUNDS</option>
+                <option value="1">ROUND 1</option>
+                <option value="2">ROUND 2</option>
+              </select>
+              <select id="mx-status-filter" class="round-select" aria-label="Filter matrix by status">
+                <option value="all">ALL STATUSES</option>
+                <option value="EVALUATED">EVALUATED</option>
+                <option value="DRAFTED">DRAFTED</option>
+                <option value="PENDING">PENDING</option>
+              </select>
+            </div>
           </div>
 
           <div class="admin-table-card">
@@ -744,6 +795,65 @@
           <div id="ann-feed-list" class="ann-feed-list"></div>
         </section>
       </div>
+
+      <!-- View: Admin Result Engine (/admin/results) -->
+      <div id="view-admin-results" class="view-panel" hidden>
+        <section class="admin-panel" aria-labelledby="admin-res-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">ADMINISTRATION // /ADMIN/RESULTS</div>
+            <h1 id="admin-res-title" class="rubrics-title">RESULT ENGINE</h1>
+            <p class="rubrics-sub">Calculate final standings, aggregate multi-judge scores, export CSV, and publish official results.</p>
+          </div>
+
+          <section class="kpi-strip" aria-label="Result engine telemetry">
+            <article class="kpi-card res-card">
+              <div class="kpi-card-top"><span class="kpi-heading">TEAMS RANKED</span></div>
+              <div class="kpi-number kpi-num-white" id="res-kpi-teams">0</div>
+              <div class="kpi-caption">Evaluated Cohort</div>
+            </article>
+            <article class="kpi-card res-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-cyan">BALLOTS AGGREGATED</span></div>
+              <div class="kpi-number kpi-num-cyan" id="res-kpi-ballots">0</div>
+              <div class="kpi-caption">Submitted Evaluations</div>
+            </article>
+            <article class="kpi-card res-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-gold">TOP SCORE</span></div>
+              <div class="kpi-number kpi-num-gold" id="res-kpi-top">0.0</div>
+              <div class="kpi-caption" id="res-kpi-leader">Awaiting scores</div>
+            </article>
+            <article class="kpi-card res-card">
+              <div class="kpi-card-top"><span class="kpi-heading kpi-head-pink">ENGINE STATUS</span></div>
+              <div class="ops-engine-value" id="res-kpi-status">Draft / Unreleased</div>
+              <div class="kpi-caption">Live Publication State</div>
+            </article>
+          </section>
+
+          <div class="admin-toolbar">
+            <div class="spoc-top-btns">
+              <input type="search" id="res-search" class="search-input" placeholder="Search ranked teams..." aria-label="Search result standings" />
+              <select id="res-round-filter" class="round-select" aria-label="Filter results by round">
+                <option value="all">ALL ROUNDS</option>
+                <option value="1">ROUND 1</option>
+                <option value="2">ROUND 2</option>
+              </select>
+              <select id="res-sem-filter" class="round-select" aria-label="Filter results by semester">
+                <option value="all">ALL SEMESTERS</option>
+                <option value="1ST SEM">1ST SEM</option>
+                <option value="3RD SEM">3RD SEM</option>
+              </select>
+            </div>
+            <div class="spoc-top-btns">
+              <button type="button" class="btn-tk btn-tk-cyan" id="btn-res-recalc">RECALCULATE</button>
+              <button type="button" class="btn-draft" id="btn-res-export">EXPORT CSV</button>
+              <button type="button" class="btn-signin-mini" id="btn-res-publish">PUBLISH RESULTS</button>
+            </div>
+          </div>
+
+          <div class="res-table-card">
+            <div class="table-wrap" id="admin-results-table-wrap"></div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -820,6 +930,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=31" defer></script>
+  <script src="./app.js?v=32" defer></script>
 </body>
 </html>
