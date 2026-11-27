@@ -41,6 +41,8 @@ const state = {
   spocTrackFilter: 'all',
   spocShowAllotted: true,
   spocOpenDropdownTeamId: null,
+  umSearch: '',
+  umRoleFilter: 'all',
   round: 'all',
   assignFilter: '',
   auditFilter: '',
@@ -104,6 +106,7 @@ function showView(viewId) {
     'view-admin-rounds',
     'view-admin-spocs',
     'view-admin-audit',
+    'view-admin-users',
     'view-spoc-teams',
     'view-spoc-readiness'
   ].forEach((id) => {
@@ -300,10 +303,7 @@ async function syncFromSupabase() {
     if (spocsRes && !spocsRes.error) state.spocs = spocsRes.data || [];
     if (spocUpdatesRes && !spocUpdatesRes.error) state.spocUpdates = spocUpdatesRes.data || [];
     if (judgesRes && !judgesRes.error) {
-      const spocNames = new Set(state.spocs.map((s) => (s.name || '').toLowerCase()));
-      state.judges = (judgesRes.data || []).filter(
-        (j) => !j.username.startsWith('spoc-') && !spocNames.has((j.display_name || '').toLowerCase())
-      );
+      state.judges = judgesRes.data || [];
     }
     if (auditRes && !auditRes.error) state.auditLogs = auditRes.data || [];
     if (accountsRes && !accountsRes.error) state.allAccounts = accountsRes.data || [];
@@ -631,42 +631,6 @@ function renderAdminViews() {
     </table>
   `;
 
-  // 2b. SPOC Names Section in Judge Assignments
-  const spocOnlyWrap = document.getElementById('admin-assign-spoc-only-wrap');
-  if (spocOnlyWrap) {
-    const spocGroups = new Map();
-    state.spocs.forEach((s) => {
-      if (!spocGroups.has(s.name)) spocGroups.set(s.name, []);
-      if (s.assigned_team_id) {
-        const tObj = state.allTeams.find((t) => t.id === s.assigned_team_id);
-        if (tObj) spocGroups.get(s.name).push(tObj.name);
-      }
-    });
-    spocOnlyWrap.innerHTML = `
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>SPOC Name</th>
-            <th>Teams Managed</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${Array.from(spocGroups.entries())
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(
-              ([spocName, teamNames]) => `
-              <tr>
-                <td><strong>${spocName}</strong></td>
-                <td>${teamNames.length > 0 ? teamNames.join(', ') : '<span class="status-pill">UNASSIGNED</span>'}</td>
-              </tr>
-            `
-            )
-            .join('')}
-        </tbody>
-      </table>
-    `;
-  }
-
   // 3. Evaluation Matrix
   document.getElementById('admin-matrix-table-wrap').innerHTML = `
     <table class="admin-table">
@@ -919,6 +883,62 @@ function renderAdminViews() {
       </tbody>
     </table>
   `;
+
+  // 7. User Management
+  const umWrap = document.getElementById('admin-users-table-wrap');
+  if (umWrap) {
+    const uq = state.umSearch.trim().toLowerCase();
+    const filteredUsers = state.allAccounts.filter((u) => {
+      const matchText =
+        (u.display_name || '').toLowerCase().includes(uq) ||
+        (u.username || '').toLowerCase().includes(uq) ||
+        (u.email || '').toLowerCase().includes(uq);
+      const matchRole = state.umRoleFilter === 'all' || u.role === state.umRoleFilter;
+      return matchText && matchRole;
+    });
+
+    umWrap.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Current Role</th>
+            <th>Change Role</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredUsers
+            .map(
+              (u) => `
+            <tr>
+              <td><strong>${u.display_name}</strong></td>
+              <td><code>${u.username}</code></td>
+              <td class="team-leader">${u.email}</td>
+              <td><span class="status-pill ${u.role === 'admin' ? 'is-evaluated' : u.role === 'judge' ? 'is-drafted' : ''}">${u.role.toUpperCase()}</span></td>
+              <td>
+                <select class="round-select" data-um-role-select="${u.id}" data-um-email="${u.email}" data-um-name="${u.display_name}" data-um-old-role="${u.role}" aria-label="Change role for ${u.display_name}">
+                  <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                  <option value="judge" ${u.role === 'judge' ? 'selected' : ''}>Judge</option>
+                  <option value="spoc" ${u.role === 'spoc' ? 'selected' : ''}>SPOC</option>
+                  <option value="staff" ${u.role === 'staff' ? 'selected' : ''}>Staff</option>
+                  <option value="team_leader" ${u.role === 'team_leader' ? 'selected' : ''}>Team Leader</option>
+                  <option value="participant" ${u.role === 'participant' ? 'selected' : ''}>Participant</option>
+                </select>
+              </td>
+              <td>
+                <button type="button" class="btn-danger-ghost" data-um-delete="${u.id}" ${u.role === 'admin' ? 'disabled' : ''}>REMOVE</button>
+              </td>
+            </tr>
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    `;
+  }
 }
 
 async function refreshTeamFromSupabase(teamId) {
@@ -1827,6 +1847,100 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('admin-audit-search')?.addEventListener('input', (e) => {
     state.auditFilter = e.target.value;
     renderAdminViews();
+  });
+
+  // Admin: User Management
+  document.getElementById('um-search')?.addEventListener('input', (e) => {
+    state.umSearch = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('um-role-filter')?.addEventListener('change', (e) => {
+    state.umRoleFilter = e.target.value;
+    renderAdminViews();
+  });
+
+  document.getElementById('admin-add-user-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isAdmin() || !state.supabase) return;
+    const displayName = document.getElementById('um-new-name').value.trim();
+    const username = document.getElementById('um-new-username').value.trim().toLowerCase();
+    const email = document.getElementById('um-new-email').value.trim().toLowerCase();
+    const password = document.getElementById('um-new-password').value;
+    const role = document.getElementById('um-new-role').value;
+
+    const { error } = await state.supabase.rpc('create_portal_account', {
+      p_email: email,
+      p_username: username,
+      p_password: password,
+      p_role: role,
+      p_display_name: displayName
+    });
+    if (error) {
+      showToast('Could not create user (duplicate email/username?).');
+      return;
+    }
+    if (role === 'spoc') {
+      await state.supabase.from('spocs').insert({
+        name: displayName,
+        email,
+        department: 'CSE',
+        assigned_team_id: null,
+        status: 'ACTIVE'
+      });
+    }
+    await writeAuditLog('USER_CREATED', username, `Role: ${role}`);
+    e.target.reset();
+    showToast(`Created ${displayName} (${role}).`);
+    await syncFromSupabase();
+  });
+
+  document.getElementById('admin-users-table-wrap')?.addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-um-role-select]');
+    if (!sel || !isAdmin() || !state.supabase) return;
+    const id = sel.dataset.umRoleSelect;
+    const email = sel.dataset.umEmail;
+    const name = sel.dataset.umName;
+    const oldRole = sel.dataset.umOldRole;
+    const newRole = sel.value;
+
+    const { error } = await state.supabase.rpc('update_portal_role', { p_id: id, p_role: newRole });
+    if (error) {
+      showToast('Failed to update user role.');
+      return;
+    }
+
+    // Keep public.spocs synced when promoting to or demoting from SPOC
+    if (newRole === 'spoc') {
+      const existsInSpocs = state.spocs.some((s) => (s.email || '').toLowerCase() === email.toLowerCase());
+      if (!existsInSpocs) {
+        await state.supabase.from('spocs').insert({
+          name,
+          email,
+          department: 'CSE',
+          assigned_team_id: null,
+          status: 'ACTIVE'
+        });
+      }
+    } else if (oldRole === 'spoc') {
+      await state.supabase.from('spocs').delete().ilike('email', email);
+    }
+
+    await writeAuditLog('USER_ROLE_CHANGED', name, `${oldRole} -> ${newRole}`);
+    showToast(`Changed ${name} from ${oldRole} to ${newRole}.`);
+    await syncFromSupabase();
+  });
+
+  document.getElementById('admin-users-table-wrap')?.addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('[data-um-delete]');
+    if (!delBtn || !isAdmin() || !state.supabase) return;
+    const id = delBtn.dataset.umDelete;
+    const { error } = await state.supabase.rpc('delete_portal_account', { p_id: id });
+    if (!error) {
+      await writeAuditLog('USER_DELETED', id, 'Removed from User Management');
+      showToast('Removed user account.');
+      await syncFromSupabase();
+    }
   });
 
   // Round filter (Judge view)

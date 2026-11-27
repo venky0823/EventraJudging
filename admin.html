@@ -97,6 +97,15 @@
           </svg>
           <span>Audit Logs</span>
         </a>
+        <a href="#admin-users" class="nav-item" data-view="admin-users">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span>User Management</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -380,16 +389,6 @@
           <div class="admin-table-card">
             <div class="table-wrap" id="admin-assign-table-wrap"></div>
           </div>
-
-          <div class="admin-table-card">
-            <div class="panel-header-inline">
-              <div>
-                <div class="rubrics-kicker">SPOC DIRECTORY</div>
-                <strong style="color: var(--color-10);">SPOC NAMES &amp; MANAGED TEAMS</strong>
-              </div>
-            </div>
-            <div class="table-wrap" id="admin-assign-spoc-only-wrap"></div>
-          </div>
         </section>
       </div>
 
@@ -553,6 +552,52 @@
           </div>
         </section>
       </div>
+
+      <!-- View: Admin User Management -->
+      <div id="view-admin-users" class="view-panel" hidden>
+        <section class="admin-panel" aria-labelledby="admin-users-title">
+          <div class="rubrics-header">
+            <div class="rubrics-kicker">ADMINISTRATION // ROLE &amp; ACCESS CONTROL</div>
+            <h1 id="admin-users-title" class="rubrics-title">USER MANAGEMENT</h1>
+            <p class="rubrics-sub">Change any user's role (e.g., SPOC ↔ Judge), add new portal accounts, or remove accounts.</p>
+          </div>
+
+          <form id="admin-add-user-form" class="admin-form-card">
+            <div class="admin-form-grid">
+              <input type="text" id="um-new-name" class="search-input" placeholder="Full Name" required />
+              <input type="text" id="um-new-username" class="search-input" placeholder="Username" required />
+              <input type="email" id="um-new-email" class="search-input" placeholder="Email" required />
+              <input type="password" id="um-new-password" class="search-input" placeholder="Password" required />
+              <select id="um-new-role" class="round-select" aria-label="Role">
+                <option value="judge">Judge</option>
+                <option value="spoc">SPOC</option>
+                <option value="staff">Staff</option>
+                <option value="team_leader">Team Leader</option>
+                <option value="participant">Participant</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button type="submit" class="btn-evaluate">CREATE USER →</button>
+            </div>
+          </form>
+
+          <div class="admin-toolbar">
+            <input type="search" id="um-search" class="search-input" placeholder="Filter users by name, username, or email..." aria-label="Filter users" />
+            <select id="um-role-filter" class="round-select" aria-label="Filter by role">
+              <option value="all">ALL ROLES</option>
+              <option value="admin">Admin</option>
+              <option value="judge">Judge</option>
+              <option value="spoc">SPOC</option>
+              <option value="staff">Staff</option>
+              <option value="team_leader">Team Leader</option>
+              <option value="participant">Participant</option>
+            </select>
+          </div>
+
+          <div class="admin-table-card">
+            <div class="table-wrap" id="admin-users-table-wrap"></div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -584,6 +629,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=28" defer></script>
+  <script src="./app.js?v=29" defer></script>
 </body>
 </html>
