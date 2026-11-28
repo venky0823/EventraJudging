@@ -128,10 +128,9 @@ html,
 
 .login-grid {
   width: 100%;
-  max-width: 1080px;
+  max-width: 460px;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
-  gap: var(--space-11);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
 }
 
@@ -219,8 +218,8 @@ html,
 }
 
 .login-card-logo-img {
-  width: 96px;
-  height: 96px;
+  width: 112px;
+  height: 112px;
   display: block;
   border-radius: var(--radius-sm);
   object-fit: contain;
