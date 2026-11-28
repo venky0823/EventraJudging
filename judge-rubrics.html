@@ -118,11 +118,10 @@
             <p class="rubrics-sub">All evaluation rounds, scoring criteria, and maximum mark allocations for this ideathon. This is a read-only reference — grading is done on each team's evaluation page.</p>
           </div>
           <div class="team-divider" aria-hidden="true"></div>
-          <div class="rubrics-alert" role="status">
-            <span>NO ACTIVE EVALUATION ROUND AT THIS TIME. CHECK BACK WHEN A ROUND IS OPENED BY THE ADMINISTRATOR.</span>
-          </div>
-          <div class="rubrics-empty-card">
-            <p class="rubrics-empty-text">No evaluation rounds have been assigned to you yet.</p>
+          <div id="judge-rubrics-content">
+            <div class="rubrics-alert" role="status">
+              <span>LOADING EVALUATION ROUNDS AND RUBRIC CRITERIA...</span>
+            </div>
           </div>
         </section>
       </div>
@@ -133,6 +132,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=36" defer></script>
+  <script src="./app.js?v=37" defer></script>
 </body>
 </html>

@@ -1617,9 +1617,99 @@ function renderPortalBroadcastBanner() {
   }
 }
 
+function renderJudgeRubrics() {
+  if (document.body.dataset.page !== 'judge') return;
+  const wrap = document.getElementById('judge-rubrics-content');
+  if (!wrap) return;
+
+  const activeRounds = state.rounds.filter((r) => r.status === 'ACTIVE');
+  const maxTotal = maxPossibleScore();
+
+  const alertHtml =
+    activeRounds.length > 0
+      ? `
+        <div class="rubrics-alert" role="status" style="border-color: var(--accent-green); background-color: var(--accent-green-tint, var(--surface-elevated)); color: var(--accent-green);">
+          <span>ACTIVE EVALUATION ROUND${activeRounds.length > 1 ? 'S' : ''}: ${activeRounds.map((r) => r.name).join(' · ')} — OPEN FOR SCORING</span>
+        </div>
+      `
+      : `
+        <div class="rubrics-alert" role="status">
+          <span>NO ACTIVE EVALUATION ROUND AT THIS TIME. CHECK BACK WHEN A ROUND IS OPENED BY THE ADMINISTRATOR.</span>
+        </div>
+      `;
+
+  const roundsHtml =
+    state.rounds.length > 0
+      ? state.rounds
+          .map(
+            (r) => `
+            <div class="round-row">
+              <div>
+                <strong style="color: var(--color-10);">${r.name}</strong>
+                <div class="team-leader">Round ID: ${r.id}</div>
+              </div>
+              <div class="assign-pills">
+                <span class="status-pill ${r.status === 'ACTIVE' ? 'is-evaluated' : r.status === 'LOCKED' ? 'is-drafted' : ''}">${r.status}</span>
+              </div>
+            </div>
+          `
+          )
+          .join('')
+      : `<div class="rubrics-empty-card"><p class="rubrics-empty-text">No evaluation rounds configured yet.</p></div>`;
+
+  const criteriaHtml =
+    state.criteria.length > 0
+      ? `
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th>Description</th>
+                <th>Max Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.criteria
+                .map(
+                  (c) => `
+                  <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.desc || '—'}</td>
+                    <td><strong style="color: var(--accent-primary);">${c.max} PTS</strong></td>
+                  </tr>
+                `
+                )
+                .join('')}
+              <tr>
+                <td colspan="2"><strong>TOTAL MAXIMUM SCORE</strong></td>
+                <td><strong style="color: var(--accent-primary);">${maxTotal} PTS</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `
+      : `<div class="rubrics-empty-card"><p class="rubrics-empty-text">No scoring criteria configured yet.</p></div>`;
+
+  wrap.innerHTML = `
+    ${alertHtml}
+    <section class="admin-card" style="margin-top: var(--space-5);">
+      <div class="rubrics-kicker">ROUND SCHEDULE</div>
+      <h2 class="eval-section-title" style="margin-bottom: var(--space-4);">EVALUATION ROUNDS (${state.rounds.length})</h2>
+      <div class="rounds-list">${roundsHtml}</div>
+    </section>
+    <section class="admin-card" style="margin-top: var(--space-5);">
+      <div class="rubrics-kicker">SCORING BREAKDOWN</div>
+      <h2 class="eval-section-title" style="margin-bottom: var(--space-4);">RUBRIC CRITERIA (${maxTotal} PTS TOTAL)</h2>
+      ${criteriaHtml}
+    </section>
+  `;
+}
+
 function renderAll() {
   renderKpis();
   renderTeamsGrid();
+  renderJudgeRubrics();
   renderAdminViews();
   renderSpocViews();
   renderPortalBroadcastBanner();
