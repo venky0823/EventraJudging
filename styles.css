@@ -146,11 +146,20 @@ html,
   flex-direction: column;
   align-items: center;
   align-self: flex-start;
-  padding: var(--space-9) var(--space-11);
+  padding: var(--space-4);
   border-radius: var(--radius-sm);
-  background-color: var(--bg-color);
+  background-color: var(--color-1);
   border: 1px solid var(--border-subtle);
   gap: var(--space-3);
+}
+
+.login-hero-logo-img {
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
 }
 
 .login-logo-wordmark {
@@ -203,10 +212,18 @@ html,
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-5) var(--space-8);
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
-  background-color: var(--bg-color);
+  background-color: var(--color-1);
   border: 1px solid var(--border-subtle);
+}
+
+.login-card-logo-img {
+  width: 96px;
+  height: 96px;
+  display: block;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
 }
 
 .login-card-wordmark {
@@ -374,16 +391,24 @@ html,
 }
 
 .brand-logo {
-  width: 84px;
-  height: 76px;
+  width: 96px;
+  height: 96px;
+  padding: var(--space-1);
   border-radius: var(--radius-sm);
-  background-color: var(--surface-elevated);
+  background-color: var(--color-1);
   border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  overflow: hidden;
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .brand-logo-text {
