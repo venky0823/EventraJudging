@@ -88,12 +88,30 @@ html,
   position: relative;
   min-height: 100vh;
   padding: var(--space-10);
-  background: radial-gradient(circle at 24% 48%, var(--accent-secondary-tint), transparent 42%),
-    radial-gradient(circle at 76% 40%, var(--surface-elevated), transparent 45%),
-    var(--bg-color);
+  background-color: var(--color-1);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.login-side-dots {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 72px;
+  background-image: radial-gradient(var(--border-strong) 1.25px, transparent 1.25px);
+  background-size: 7px 7px;
+  pointer-events: none;
+}
+
+.login-dots-left {
+  left: var(--space-4);
+}
+
+.login-dots-right {
+  right: var(--space-4);
 }
 
 .login-corner {
@@ -128,37 +146,35 @@ html,
 
 .login-grid {
   width: 100%;
-  max-width: 460px;
+  max-width: 1060px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+  gap: var(--space-11);
   align-items: center;
 }
 
 .login-hero {
   display: flex;
   flex-direction: column;
-  gap: var(--space-7);
+  gap: var(--space-5);
 }
 
 .login-hero-logo {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   align-self: flex-start;
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-1);
-  border: 1px solid var(--border-subtle);
-  gap: var(--space-3);
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .login-hero-logo-img {
-  width: 220px;
+  width: 240px;
   max-width: 100%;
   height: auto;
   display: block;
-  border-radius: var(--radius-sm);
   object-fit: contain;
+  mix-blend-mode: lighten;
 }
 
 .login-logo-wordmark {
@@ -198,31 +214,29 @@ html,
 .login-card {
   padding: var(--space-10);
   border-radius: var(--radius-md);
-  background-color: var(--surface-elevated);
+  background-color: var(--surface-color);
   border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .login-card-logo {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-1);
-  border: 1px solid var(--border-subtle);
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .login-card-logo-img {
-  width: 112px;
-  height: 112px;
+  width: 108px;
+  height: 108px;
   display: block;
-  border-radius: var(--radius-sm);
   object-fit: contain;
+  mix-blend-mode: lighten;
 }
 
 .login-card-wordmark {
