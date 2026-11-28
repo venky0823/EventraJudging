@@ -76,7 +76,9 @@ function isAdmin() {
 
 function loadSavedUser() {
   try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
+    // sessionStorage (current tab) takes priority over localStorage (remembered)
+    // This prevents a stale "remember me" judge session from hijacking an admin tab
+    const raw = sessionStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem(AUTH_STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -154,6 +156,13 @@ const VIEW_URLS = {
 function navigateToView(viewName, query = '') {
   const targetId = viewName.startsWith('view-') ? viewName : `view-${viewName}`;
   const rawName = viewName.replace(/^view-/, '');
+  // Guard: admin must never be navigated to judge-only or spoc-only pages
+  const judgeOnlyViews = ['teams', 'rubrics', 'evaluate'];
+  const spocOnlyViews = ['spoc-teams', 'spoc-readiness'];
+  if (isAdmin() && (judgeOnlyViews.includes(rawName) || spocOnlyViews.includes(rawName))) {
+    console.warn(`[EVENTRA] Admin navigation to "${rawName}" blocked — admin stays on admin pages.`);
+    return;
+  }
   if (document.getElementById(targetId)) {
     setActiveNav(rawName);
     showView(rawName);
