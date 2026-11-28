@@ -2032,7 +2032,9 @@ select option,
 }
 
 .spoc-team-tile.is-other-allotted {
-  border-color: var(--border-strong);
+  border-color: var(--border-subtle);
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .spoc-tile-checkbox {
@@ -2047,6 +2049,11 @@ select option,
   position: relative;
   flex-shrink: 0;
   transition: background-color var(--duration-fast), border-color var(--duration-fast);
+}
+
+.spoc-tile-checkbox:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .spoc-tile-checkbox:checked {

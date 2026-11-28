@@ -937,7 +937,12 @@ function renderAdminViews() {
     return matchText && matchTrack && matchAvail;
   });
 
-  document.getElementById('btn-spoc-select-filtered').textContent = `SELECT FILTERED (${filteredAllotTeams.length})`;
+  const availableFilteredCount = filteredAllotTeams.filter((t) => {
+    const ownerObj = teamToSpoc.get(t.id);
+    const ownerEmail = ownerObj ? ownerObj.email.toLowerCase() : '';
+    return !ownerObj || ownerEmail === state.activeSpocEmail;
+  }).length;
+  document.getElementById('btn-spoc-select-filtered').textContent = `SELECT AVAILABLE (${availableFilteredCount})`;
 
   document.getElementById('spoc-allot-teams-grid').innerHTML = filteredAllotTeams
     .map((t, idx) => {
@@ -948,17 +953,17 @@ function renderAdminViews() {
       const tileCls = isCheckedForActive ? 'is-checked' : isOwnedByOther ? 'is-other-allotted' : '';
       const statusCls = isCheckedForActive || isOwnedByOther ? 'spoc-taken' : 'spoc-avail';
       const statusLabel = isCheckedForActive
-        ? `Selected: ${activeStaff ? activeStaff.name : 'Active SPOC'}`
+        ? `Assigned: ${activeStaff ? activeStaff.name : 'Active SPOC'}`
         : isOwnedByOther
-          ? `Allotted: ${ownerObj.name}`
+          ? `Locked · Allotted to ${ownerObj.name}`
           : 'Available for Allotment';
       return `
-        <div class="spoc-team-tile ${tileCls}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${isCheckedForActive}" tabindex="0">
+        <div class="spoc-team-tile ${tileCls}" data-toggle-spoc-team="${t.id}" role="checkbox" aria-checked="${isCheckedForActive}" aria-disabled="${isOwnedByOther}" tabindex="0">
           <div class="spoc-tile-top">
             <span class="spoc-idx" style="color:var(--accent-primary);">#${idx + 1}</span>
             <span class="spoc-code-pill">IVC-${String(101 + idx)}</span>
             <div class="spoc-tile-title" style="flex:1;min-width:0;">${t.name}</div>
-            <input type="checkbox" class="spoc-tile-checkbox" data-spoc-checkbox="${t.id}" ${isCheckedForActive ? 'checked' : ''} aria-label="Assign ${t.name} to ${activeStaff ? activeStaff.name : 'SPOC'}" />
+            <input type="checkbox" class="spoc-tile-checkbox" data-spoc-checkbox="${t.id}" ${isCheckedForActive ? 'checked' : ''} ${isOwnedByOther ? 'disabled' : ''} aria-label="Assign ${t.name} to ${activeStaff ? activeStaff.name : 'SPOC'}" />
           </div>
           <div class="spoc-tile-meta">
             <span class="sem-label">[${t.sem}]</span>
@@ -1907,43 +1912,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const sample = state.spocs.find((s) => (s.email || '').toLowerCase() === activeEmail);
     if (!sample) return;
 
-    const selected = Array.from(state.spocSelectedTeams);
-    const selectedSet = new Set(selected);
+    // Enforce max 1 SPOC per team: exclude any team already allotted to a different SPOC
+    const takenByOthers = new Set(
+      state.spocs
+        .filter((r) => r.assigned_team_id && (r.email || '').toLowerCase() !== activeEmail)
+        .map((r) => r.assigned_team_id)
+    );
+    const selected = Array.from(state.spocSelectedTeams).filter((tid) => !takenByOthers.has(tid));
+    state.spocSelectedTeams = new Set(selected);
 
-    // Preserve any SPOC whose only assigned teams were reassigned to activeEmail
-    const evictedStaffSamples = [];
-    const remainingByEmail = new Map();
-    state.spocs.forEach((row) => {
-      const rowEmail = (row.email || '').toLowerCase();
-      if (rowEmail === activeEmail) return;
-      if (!remainingByEmail.has(rowEmail)) remainingByEmail.set(rowEmail, { sample: row, count: 0 });
-      if (!row.assigned_team_id || !selectedSet.has(row.assigned_team_id)) {
-        if (row.assigned_team_id) remainingByEmail.get(rowEmail).count += 1;
-      }
-    });
-
-    const nextSpocs = state.spocs.filter((row) => {
-      const rowEmail = (row.email || '').toLowerCase();
-      if (rowEmail === activeEmail) return false;
-      if (row.assigned_team_id && selectedSet.has(row.assigned_team_id)) return false;
-      return true;
-    });
-
-    remainingByEmail.forEach((info, rowEmail) => {
-      const stillHasRow = nextSpocs.some((r) => (r.email || '').toLowerCase() === rowEmail);
-      if (!stillHasRow) {
-        const placeholder = {
-          name: info.sample.name,
-          email: info.sample.email,
-          phone: info.sample.phone,
-          department: info.sample.department,
-          assigned_team_id: null,
-          status: 'ACTIVE'
-        };
-        nextSpocs.push(placeholder);
-        evictedStaffSamples.push(placeholder);
-      }
-    });
+    const nextSpocs = state.spocs.filter((row) => (row.email || '').toLowerCase() !== activeEmail);
 
     if (selected.length > 0) {
       selected.forEach((tid) => {
@@ -1975,14 +1953,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.pendingSpocSaves += 1;
     spocSaveQueue = spocSaveQueue
       .then(async () => {
-        if (selected.length > 0) {
-          await state.supabase.from('spocs').delete().in('assigned_team_id', selected);
-        }
         await state.supabase.from('spocs').delete().ilike('email', sample.email);
-
-        if (evictedStaffSamples.length > 0) {
-          await state.supabase.from('spocs').insert(evictedStaffSamples);
-        }
 
         const rows =
           selected.length > 0
@@ -2007,7 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { error } = await state.supabase.from('spocs').insert(rows);
         if (error) {
-          showToast('Failed to save SPOC allotment.');
+          showToast('That team is already allotted to another SPOC (max 1 SPOC per team).');
           return;
         }
         if (showNotice) {
@@ -2044,6 +2015,13 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Select a SPOC from the left list first.');
       return;
     }
+    const existingOther = state.spocs.find(
+      (s) => s.assigned_team_id === tid && (s.email || '').toLowerCase() !== state.activeSpocEmail
+    );
+    if (existingOther && !state.spocSelectedTeams.has(tid)) {
+      showToast(`Already allotted to ${existingOther.name}. Unassign from them first (max 1 SPOC per team).`);
+      return;
+    }
     if (state.spocSelectedTeams.has(tid)) state.spocSelectedTeams.delete(tid);
     else state.spocSelectedTeams.add(tid);
     commitActiveSpocSelection(false);
@@ -2069,8 +2047,14 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Select a SPOC from the left list first.');
       return;
     }
+    const takenByOthers = new Set(
+      state.spocs
+        .filter((s) => s.assigned_team_id && (s.email || '').toLowerCase() !== state.activeSpocEmail)
+        .map((s) => s.assigned_team_id)
+    );
     document.querySelectorAll('#spoc-allot-teams-grid [data-toggle-spoc-team]').forEach((el) => {
-      state.spocSelectedTeams.add(el.dataset.toggleSpocTeam);
+      const tid = el.dataset.toggleSpocTeam;
+      if (!takenByOthers.has(tid)) state.spocSelectedTeams.add(tid);
     });
     commitActiveSpocSelection(true);
   });
@@ -2224,6 +2208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return '';
       };
 
+      const takenTeams = new Set(state.spocs.map((s) => s.assigned_team_id).filter(Boolean));
       const spocRows = [];
       for (const r of rawRows) {
         const name = pickCol(r, ['spoc name', 'name', 'spoc', 'full name', 'staff name']);
@@ -2241,7 +2226,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const matched = state.allTeams.find(
             (t) => t.name.toLowerCase() === teamVal.toLowerCase() || t.id.toLowerCase() === teamVal.toLowerCase()
           );
-          if (matched) assignedTeamId = matched.id;
+          if (matched && !takenTeams.has(matched.id)) {
+            assignedTeamId = matched.id;
+            takenTeams.add(matched.id);
+          }
         }
 
         spocRows.push({
