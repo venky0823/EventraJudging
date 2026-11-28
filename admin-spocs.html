@@ -246,7 +246,10 @@
                   <div>
                     <div class="rubrics-kicker">STAFF SPOC ALLOTMENT CONSOLE</div>
                     <h2 class="spoc-active-name" id="spoc-active-name">SELECT A SPOC</h2>
-                    <div class="team-leader" id="spoc-active-email">—</div>
+                    <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-1);">
+                      <span class="status-pill is-evaluated" id="spoc-active-count">0 SELECTED</span>
+                      <span class="team-leader" id="spoc-active-email">—</span>
+                    </div>
                   </div>
                 </div>
                 <div class="spoc-allot-actions">
@@ -282,6 +285,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="./config.js"></script>
-  <script src="./app.js?v=33" defer></script>
+  <script src="./app.js?v=34" defer></script>
 </body>
 </html>

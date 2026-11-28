@@ -1942,7 +1942,17 @@ select option,
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  flex: 1;
   min-width: 0;
+}
+
+.spoc-staff-meta {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.spoc-staff-item .status-pill {
+  flex-shrink: 0;
 }
 
 .spoc-idx {
@@ -2017,8 +2027,43 @@ select option,
 }
 
 .spoc-team-tile.is-checked {
-  border-color: var(--accent-primary);
-  background-color: var(--accent-primary-tint);
+  border-color: var(--accent-secondary);
+  background-color: var(--accent-secondary-tint);
+}
+
+.spoc-team-tile.is-other-allotted {
+  border-color: var(--border-strong);
+}
+
+.spoc-tile-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-strong);
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast);
+}
+
+.spoc-tile-checkbox:checked {
+  background-color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+}
+
+.spoc-tile-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border-right: 2px solid var(--color-10);
+  border-bottom: 2px solid var(--color-10);
+  transform: rotate(45deg);
 }
 
 .spoc-tile-top {
